@@ -8,7 +8,7 @@ const DEFAULT_PASSWORD = 'finance2026';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (password: string) => boolean;
+  login: (password: string) => Promise<boolean>;
   logout: () => void;
   updatePassword: (oldPass: string, newPass: string) => Promise<{ success: boolean; message: string }>;
   isDefaultPassword: () => boolean;
@@ -18,50 +18,44 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [cloudPassword, setCloudPassword] = useState<string | null>(null);
+  const [activePassword, setActivePassword] = useState<string | null>(null);
 
-  // Sync password from cloud on initialization
+  // Load password from cloud on every app start
   useEffect(() => {
-    async function syncPassword() {
+    async function fetchPass() {
       try {
         const res = await fetch('/api/auth/password');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.password) {
-            setCloudPassword(data.password);
-            localStorage.setItem(PASSWORD_KEY, data.password);
-          }
+        const data = await res.json();
+        if (data.password) {
+          setActivePassword(data.password);
+          localStorage.setItem(PASSWORD_KEY, data.password);
         }
-      } catch (err) {
-        console.warn('Could not sync password from cloud');
-      }
+      } catch (err) {}
     }
-    
+
     const storedAuth = localStorage.getItem(AUTH_KEY);
-    if (storedAuth === 'true') {
-      setIsAuthenticated(true);
-    }
+    if (storedAuth === 'true') setIsAuthenticated(true);
     
-    syncPassword();
+    fetchPass();
   }, []);
 
-  const getActivePassword = useCallback(() => {
-    // Priority: Cloud State > Local Storage > ENV/Default
-    if (cloudPassword) return cloudPassword;
-    const local = localStorage.getItem(PASSWORD_KEY);
-    if (local) return local;
-    return process.env.NEXT_PUBLIC_APP_PASSWORD || DEFAULT_PASSWORD;
-  }, [cloudPassword]);
+  const login = useCallback(async (password: string): Promise<boolean> => {
+    // Re-check cloud password on login for safety
+    let currentPass = activePassword || localStorage.getItem(PASSWORD_KEY) || process.env.NEXT_PUBLIC_APP_PASSWORD || DEFAULT_PASSWORD;
+    
+    try {
+      const res = await fetch('/api/auth/password');
+      const data = await res.json();
+      if (data.password) currentPass = data.password;
+    } catch (err) {}
 
-  const login = useCallback((password: string): boolean => {
-    const activePassword = getActivePassword();
-    if (password === activePassword) {
+    if (password === currentPass) {
       setIsAuthenticated(true);
       localStorage.setItem(AUTH_KEY, 'true');
       return true;
     }
     return false;
-  }, [getActivePassword]);
+  }, [activePassword]);
 
   const logout = useCallback(() => {
     setIsAuthenticated(false);
@@ -69,37 +63,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const updatePassword = useCallback(async (oldPass: string, newPass: string) => {
-    const activePassword = getActivePassword();
-    if (oldPass !== activePassword) {
-      return { success: false, message: 'Senha atual incorreta' };
-    }
-    if (newPass.length < 4) {
-      return { success: false, message: 'A nova senha deve ter pelo menos 4 caracteres' };
-    }
+    let currentPass = activePassword || localStorage.getItem(PASSWORD_KEY) || process.env.NEXT_PUBLIC_APP_PASSWORD || DEFAULT_PASSWORD;
+    
+    if (oldPass !== currentPass) return { success: false, message: 'Senha incorreta' };
     
     try {
-      // Save to Cloud
-      const res = await fetch('/api/auth/password', {
+      await fetch('/api/auth/password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: newPass }),
       });
-      
-      if (!res.ok) throw new Error('Cloud sync failed');
-      
-      // Save Locally
       localStorage.setItem(PASSWORD_KEY, newPass);
-      setCloudPassword(newPass);
-      
-      return { success: true, message: 'Senha alterada e sincronizada na nuvem!' };
+      setActivePassword(newPass);
+      return { success: true, message: 'Senha atualizada na nuvem!' };
     } catch (err) {
-      return { success: false, message: 'Erro ao sincronizar nova senha com a nuvem' };
+      return { success: false, message: 'Erro de conexão com a nuvem' };
     }
-  }, [getActivePassword]);
+  }, [activePassword]);
 
   const isDefaultPassword = useCallback(() => {
-    return !localStorage.getItem(PASSWORD_KEY) && !cloudPassword;
-  }, [cloudPassword]);
+    return !activePassword && !localStorage.getItem(PASSWORD_KEY);
+  }, [activePassword]);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, login, logout, updatePassword, isDefaultPassword }}>
@@ -110,8 +94,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 }

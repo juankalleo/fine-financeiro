@@ -25,7 +25,8 @@ export default function LoginPage() {
     // Simulate a slight delay for UX
     await new Promise((r) => setTimeout(r, 600));
 
-    if (login(password)) {
+    const success = await login(password);
+    if (success) {
       router.push('/dashboard');
     } else {
       setError('Senha incorreta');
