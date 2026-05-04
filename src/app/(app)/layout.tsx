@@ -12,17 +12,17 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const { isSidebarCollapsed } = useUI();
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.replace('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isLoading, router]);
 
-  if (!isAuthenticated) {
+  if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-apple-blue">
         <div className="w-16 h-16 rounded-3xl bg-white flex items-center justify-center shadow-2xl animate-pulse">

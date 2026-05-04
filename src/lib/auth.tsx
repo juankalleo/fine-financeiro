@@ -9,6 +9,7 @@ const DEFAULT_PASS = 'finance2026';
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  isLoading: boolean;
   username: string;
   login: (user: string, pass: string) => Promise<boolean>;
   logout: () => void;
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState(DEFAULT_USER);
   const [password, setPassword] = useState(DEFAULT_PASS);
 
@@ -36,8 +38,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const storedAuth = localStorage.getItem(AUTH_KEY);
-    if (storedAuth === 'true') setIsAuthenticated(true);
-
+    if (storedAuth === 'true') {
+      setIsAuthenticated(true);
+    }
+    
     const localCreds = localStorage.getItem(CREDS_KEY);
     if (localCreds) {
       try {
@@ -47,7 +51,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch {}
     }
 
-    fetchCloudCreds();
+    fetchCloudCreds().finally(() => {
+      setIsLoading(false);
+    });
   }, [fetchCloudCreds]);
 
   const login = useCallback(async (user: string, pass: string): Promise<boolean> => {
@@ -78,7 +84,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const updateCredentials = useCallback(async (newUser: string, oldPass: string, newPass: string) => {
-    // Force a fresh check of the current password from cloud/local
     let currentPass = password;
     try {
       const res = await fetch(`/api/auth/credentials?t=${Date.now()}`, { cache: 'no-store' });
@@ -89,28 +94,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (oldPass !== currentPass) return { success: false, message: 'Senha atual incorreta' };
     
     try {
-      const res = await fetch('/api/auth/credentials', {
+      await fetch('/api/auth/credentials', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: newUser, password: newPass }),
       });
-      
-      if (!res.ok) {
-        const errData = await res.json();
-        return { success: false, message: errData.error || 'Erro na sincronização' };
-      }
-      
       setUsername(newUser);
       setPassword(newPass);
       localStorage.setItem(CREDS_KEY, JSON.stringify({ username: newUser, password: newPass }));
-      return { success: true, message: 'Acesso atualizado e sincronizado!' };
+      return { success: true, message: 'Acesso atualizado!' };
     } catch (err) {
-      return { success: false, message: 'Erro de rede ao conectar com o banco de dados' };
+      return { success: false, message: 'Erro ao sincronizar' };
     }
   }, [password]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, username, login, logout, updateCredentials }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, username, login, logout, updateCredentials }}>
       {children}
     </AuthContext.Provider>
   );
