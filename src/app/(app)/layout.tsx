@@ -34,19 +34,19 @@ export default function AppLayout({
 
   return (
     <AppProvider>
-      <div className="fixed inset-0 bg-[var(--app-frame)] text-foreground transition-all duration-500 overflow-hidden flex flex-col">
+      <div className="fixed inset-0 bg-background dark:bg-zinc-950 text-foreground transition-all duration-500 overflow-hidden flex flex-col">
         <Sidebar />
         <div 
-          className={`flex-1 transition-all duration-300 flex flex-col h-full ${
+          className={`flex-1 transition-all duration-300 flex flex-col h-full lg:bg-[var(--app-frame)] ${
             isSidebarCollapsed ? 'lg:ml-14' : 'lg:ml-64'
           }`}
         >
           <TopBar />
           
           {/* Main Content Frame - Full Width, rounded only on the left side */}
-          <div className="flex-1 mt-14 bg-background dark:bg-zinc-950 rounded-tl-[40px] rounded-bl-[40px] relative overflow-hidden shadow-2xl">
+          <div className="flex-1 mt-0 lg:mt-14 bg-background dark:bg-zinc-950 lg:rounded-tl-[40px] lg:rounded-bl-[40px] relative overflow-hidden shadow-2xl">
              <main className="absolute inset-0 overflow-y-auto no-scrollbar scroll-smooth">
-                <div className="w-full px-8 sm:px-12 lg:px-16 py-12">
+                <div className="w-full px-6 sm:px-12 lg:px-16 py-8 lg:py-12">
                   {children}
                 </div>
              </main>
