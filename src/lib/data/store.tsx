@@ -335,6 +335,7 @@ interface AppContextType {
   isSyncing: boolean;
   exportData: () => string;
   importData: (jsonStr: string) => boolean;
+  refreshFromCloud: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -344,26 +345,40 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isSyncing, setIsSyncing] = useState(true);
   const isFirstLoad = useRef(true);
 
+  const refreshFromCloud = useCallback(async () => {
+    setIsSyncing(true);
+    const kvData = await loadFromKV();
+    if (kvData) {
+      dispatch({ type: 'SET_DATA', payload: kvData });
+      saveLocalData(kvData);
+      toast.success('Dados sincronizados com a nuvem');
+    } else {
+      toast.error('Não foi possível sincronizar com a nuvem');
+    }
+    setIsSyncing(false);
+  }, []);
+
   useEffect(() => {
     async function init() {
       setIsSyncing(true);
       const local = loadLocalData();
       const kvData = await loadFromKV();
       
-      // Compare versions if both exist
-      if (kvData && local) {
+      // Smart Sync Logic
+      if (kvData) {
         const kvDate = new Date(kvData.updatedAt || 0).getTime();
         const localDate = new Date(local.updatedAt || 0).getTime();
         
-        if (kvDate >= localDate) {
+        // If local is the same as initial data, ALWAYS take KV
+        const isLocalInitial = JSON.stringify(local.wallet) === JSON.stringify(initialData.wallet) && local.records.length === 0;
+
+        if (isLocalInitial || kvDate >= localDate) {
           dispatch({ type: 'SET_DATA', payload: kvData });
+          saveLocalData(kvData);
         } else {
           dispatch({ type: 'SET_DATA', payload: local });
-          // If local is newer, sync it to KV immediately
           syncToKV(local);
         }
-      } else if (kvData) {
-        dispatch({ type: 'SET_DATA', payload: kvData });
       } else {
         dispatch({ type: 'SET_DATA', payload: local });
       }
@@ -374,7 +389,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     init();
   }, []);
 
-  // Process auto charges when data is loaded or day changes
   useEffect(() => {
     if (!isSyncing) {
       dispatch({ type: 'PROCESS_AUTO_CHARGES' });
@@ -394,7 +408,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AppContext.Provider value={{ data, dispatch, isSyncing, exportData, importData }}>
+    <AppContext.Provider value={{ data, dispatch, isSyncing, exportData, importData, refreshFromCloud }}>
       {isSyncing && (
         <div className="fixed top-4 right-4 z-[100]">
           <div className="bg-apple-blue text-white px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center gap-2 animate-pulse">

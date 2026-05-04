@@ -24,7 +24,7 @@ import {
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
-  const { data, dispatch, exportData, importData } = useAppData();
+  const { data, dispatch, exportData, importData, refreshFromCloud, isSyncing } = useAppData();
   const { logout, updatePassword } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -67,7 +67,7 @@ export default function SettingsPage() {
     toast.success('Nome atualizado');
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (!oldPassword || !newPassword || !confirmPassword) {
       toast.error('Preencha todos os campos de senha');
       return;
@@ -77,7 +77,7 @@ export default function SettingsPage() {
       return;
     }
     
-    const result = updatePassword(oldPassword, newPassword);
+    const result = await updatePassword(oldPassword, newPassword);
     if (result.success) {
       toast.success(result.message);
       setOldPassword('');
@@ -305,6 +305,16 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-3">
+              <Button
+                onClick={refreshFromCloud}
+                disabled={isSyncing}
+                variant="outline"
+                className="w-full h-12 rounded-2xl justify-start gap-3 font-bold border-border/60"
+              >
+                <RotateCcw className={`w-4 h-4 text-apple-blue ${isSyncing ? 'animate-spin' : ''}`} />
+                Sincronizar com a Nuvem
+              </Button>
+
               <Button
                 onClick={handleExport}
                 variant="outline"

@@ -54,7 +54,7 @@ export function TopBar() {
 
   return (
     <header 
-      className={`fixed top-0 right-0 h-14 bg-[var(--app-frame)] z-30 flex items-center justify-between px-10 transition-all duration-300 ${
+      className={`fixed top-0 right-0 h-14 bg-[var(--app-frame)] z-30 lg:flex hidden items-center justify-between px-10 transition-all duration-300 ${
         isSidebarCollapsed ? 'left-14' : 'left-64'
       }`}
     >
