@@ -1,7 +1,7 @@
 'use client';
 
 import { useAppData } from '@/lib/data/store';
-import { getGreeting } from '@/lib/helpers';
+import { getGreeting, formatDate } from '@/lib/helpers';
 
 interface HeaderProps {
   title?: string;
@@ -10,23 +10,20 @@ interface HeaderProps {
 
 export function Header({ title, subtitle }: HeaderProps) {
   const { data } = useAppData();
+  const greeting = getGreeting();
 
   return (
     <header className="flex flex-col gap-1 mb-8">
-      <h1 className="text-xl lg:text-2xl font-bold tracking-tight text-foreground">
-        {title || `${getGreeting()}, ${data.userName}`}
-      </h1>
-      {subtitle && (
-        <p className="text-xs text-muted-foreground font-medium">{subtitle}</p>
-      )}
-      {!title && (
-        <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold">
-          {new Date().toLocaleDateString('pt-BR', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-          })}
+      <div>
+        <h1 className="text-3xl lg:text-4xl font-black tracking-tight flex items-center gap-2">
+          {greeting}, <span className="text-apple-blue">{data.userName.split(' ')[0]}</span>
+        </h1>
+        <p className="text-[10px] lg:text-xs font-black text-muted-foreground uppercase tracking-[0.2em] mt-1 opacity-70">
+          {subtitle || formatDate(new Date().toISOString())}
         </p>
+      </div>
+      {title && title !== greeting && (
+        <h2 className="text-lg font-black mt-2 text-foreground/80 uppercase tracking-tight">{title}</h2>
       )}
     </header>
   );
