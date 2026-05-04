@@ -106,6 +106,7 @@ export function MobileTopBar() {
             )}
           </AnimatePresence>
         </div>
+        </div>
       </div>
     </div>
   );
