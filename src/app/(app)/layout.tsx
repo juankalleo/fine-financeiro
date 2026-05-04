@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { AppProvider } from '@/lib/data/store';
-import { Sidebar, BottomNav, TopBar } from '@/components/layout/navigation';
+import { Sidebar, BottomNav, TopBar, MobileTopBar } from '@/components/layout/navigation';
 import { useUI } from '@/lib/ui-store';
 
 export default function AppLayout({
@@ -41,10 +41,11 @@ export default function AppLayout({
             isSidebarCollapsed ? 'lg:ml-14' : 'lg:ml-64'
           }`}
         >
+          <MobileTopBar />
           <TopBar />
           
           {/* Main Content Frame - Full Width, rounded only on the left side */}
-          <div className="flex-1 mt-0 lg:mt-14 bg-background dark:bg-zinc-950 lg:rounded-tl-[40px] lg:rounded-bl-[40px] relative overflow-hidden shadow-2xl">
+          <div className="flex-1 mt-14 bg-background dark:bg-zinc-950 lg:rounded-tl-[40px] lg:rounded-bl-[40px] relative overflow-hidden shadow-2xl">
              <main className="absolute inset-0 overflow-y-auto no-scrollbar scroll-smooth">
                 <div className="w-full px-6 sm:px-12 lg:px-16 py-8 lg:py-12">
                   {children}

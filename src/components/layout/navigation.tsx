@@ -37,6 +37,79 @@ const navItems = [
   { href: '/settings', label: 'Ajustes', icon: Settings },
 ];
 
+export function MobileTopBar() {
+  const { theme, setTheme } = useTheme();
+  const { logout } = useAuth();
+  const router = useRouter();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
+
+  return (
+    <div className="lg:hidden fixed top-0 left-0 right-0 h-14 px-6 flex items-center justify-between z-40 bg-background/80 backdrop-blur-md">
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 rounded-xl bg-apple-blue flex items-center justify-center">
+          <Image src="/icons/icon-192.png" alt="F" width={20} height={20} className="invert brightness-0" />
+        </div>
+        <span className="text-lg font-black uppercase tracking-tighter">Fine</span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="p-2 text-muted-foreground"
+        >
+          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </button>
+        
+        <div className="relative">
+          <button 
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="w-10 h-10 rounded-full bg-apple-blue/10 flex items-center justify-center border border-apple-blue/20"
+          >
+            <User className="w-5 h-5 text-apple-blue" />
+          </button>
+
+          <AnimatePresence>
+            {showProfileMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-border/40 py-2 z-50 overflow-hidden"
+                >
+                  <button
+                    onClick={() => {
+                      router.push('/settings');
+                      setShowProfileMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold hover:bg-secondary transition-colors"
+                  >
+                    <Settings className="w-4 h-4 text-muted-foreground" />
+                    Ajustes
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sair
+                  </button>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function TopBar() {
   const { isSidebarCollapsed } = useUI();
   const { theme, setTheme } = useTheme();
@@ -67,15 +140,6 @@ export function TopBar() {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="relative hidden md:flex items-center">
-          <Search className="absolute left-3 w-3.5 h-3.5 text-white/40" />
-          <input 
-            type="text" 
-            placeholder="Comando ou busca..." 
-            className="h-8 w-56 pl-9 pr-3 text-[11px] bg-white/10 border-0 rounded-xl text-white placeholder:text-white/30 focus:ring-1 focus:ring-white/20 transition-all"
-          />
-        </div>
-
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className="p-2 rounded-xl hover:bg-white/10 text-white transition-colors"
@@ -107,9 +171,19 @@ export function TopBar() {
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
                   className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-border/40 py-2 z-50 overflow-hidden"
                 >
-                  <div className="px-4 py-2 border-b border-border/40 mb-1">
+                  <div className="px-4 py-1 border-b border-border/40 mb-1">
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Sua Conta</p>
                   </div>
+                  <button
+                    onClick={() => {
+                      router.push('/settings');
+                      setShowProfileMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold hover:bg-secondary transition-colors"
+                  >
+                    <Settings className="w-4 h-4 text-muted-foreground" />
+                    Ajustes
+                  </button>
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
