@@ -7,11 +7,6 @@ const CREDS_KEY = 'financeapp_local_creds';
 const DEFAULT_USER = 'admin';
 const DEFAULT_PASS = 'finance2026';
 
-interface Credentials {
-  username: string;
-  password?: string;
-}
-
 interface AuthContextType {
   isAuthenticated: boolean;
   username: string;
@@ -45,16 +40,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const localCreds = localStorage.getItem(CREDS_KEY);
     if (localCreds) {
-      const parsed = JSON.parse(localCreds);
-      setUsername(parsed.username);
-      setPassword(parsed.password);
+      try {
+        const parsed = JSON.parse(localCreds);
+        setUsername(parsed.username);
+        setPassword(parsed.password);
+      } catch {}
     }
 
     fetchCloudCreds();
   }, [fetchCloudCreds]);
 
   const login = useCallback(async (user: string, pass: string): Promise<boolean> => {
-    // Always refresh creds from cloud on login attempt
     try {
       const res = await fetch(`/api/auth/credentials?t=${Date.now()}`, { cache: 'no-store' });
       const data = await res.json();
@@ -68,7 +64,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (err) {}
 
-    // Fallback to state/local
     if (user === username && pass === password) {
       setIsAuthenticated(true);
       localStorage.setItem(AUTH_KEY, 'true');
@@ -83,7 +78,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const updateCredentials = useCallback(async (newUser: string, oldPass: string, newPass: string) => {
-    if (oldPass !== password) return { success: false, message: 'Senha atual incorreta' };
+    // Force a fresh check of the current password from cloud/local
+    let currentPass = password;
+    try {
+      const res = await fetch(`/api/auth/credentials?t=${Date.now()}`, { cache: 'no-store' });
+      const data = await res.json();
+      if (data.password) currentPass = data.password;
+    } catch (err) {}
+
+    if (oldPass !== currentPass) return { success: false, message: 'Senha atual incorreta' };
     
     try {
       const res = await fetch('/api/auth/credentials', {
@@ -91,14 +94,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: newUser, password: newPass }),
       });
-      if (!res.ok) throw new Error();
+      
+      if (!res.ok) {
+        const errData = await res.json();
+        return { success: false, message: errData.error || 'Erro na sincronização' };
+      }
       
       setUsername(newUser);
       setPassword(newPass);
       localStorage.setItem(CREDS_KEY, JSON.stringify({ username: newUser, password: newPass }));
-      return { success: true, message: 'Credenciais atualizadas na nuvem!' };
+      return { success: true, message: 'Acesso atualizado e sincronizado!' };
     } catch (err) {
-      return { success: false, message: 'Erro ao sincronizar com a nuvem' };
+      return { success: false, message: 'Erro de rede ao conectar com o banco de dados' };
     }
   }, [password]);
 
