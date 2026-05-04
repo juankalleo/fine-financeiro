@@ -6,10 +6,11 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { User, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 
 export default function LoginPage() {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,18 +26,17 @@ export default function LoginPage() {
     // Simulate a slight delay for UX
     await new Promise((r) => setTimeout(r, 600));
 
-    const success = await login(password);
+    const success = await login(username, password);
     if (success) {
       router.push('/dashboard');
     } else {
-      setError('Senha incorreta');
+      setError('Usuário ou senha incorretos');
       setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-apple-blue px-4 overflow-hidden relative">
-      {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
         <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-white rounded-full blur-[160px]" />
         <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-white rounded-full blur-[160px]" />
@@ -48,7 +48,6 @@ export default function LoginPage() {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="w-full max-w-[380px] relative z-10"
       >
-        {/* Logo */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -58,15 +57,14 @@ export default function LoginPage() {
           <div className="w-20 h-20 rounded-[28px] bg-white flex items-center justify-center shadow-2xl shadow-black/20 mb-6 overflow-hidden border-4 border-white/20">
              <Image src="/icons/icon-192.png" alt="Fine" width={80} height={80} className="object-cover" />
           </div>
-          <h1 className="text-4xl font-black tracking-tighter text-white">
+          <h1 className="text-4xl font-black tracking-tighter text-white uppercase">
             Fine
           </h1>
-          <p className="text-sm text-white/70 mt-1 font-bold uppercase tracking-widest">
-            SaaS Financeiro de Elite
+          <p className="text-xs text-white/70 mt-1 font-black uppercase tracking-[0.2em]">
+            SaaS Financeiro
           </p>
         </motion.div>
 
-        {/* Login Card */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -79,26 +77,44 @@ export default function LoginPage() {
             </div>
             <div>
               <h2 className="text-base font-black text-foreground uppercase tracking-tight">
-                Acessar Conta
+                Acesso Seguro
               </h2>
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wide">
-                Insira sua senha mestre
+              <p className="text-[10px] text-muted-foreground font-black uppercase tracking-wide">
+                Identifique-se para entrar
               </p>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <User className="w-4 h-4" />
+              </div>
               <Input
-                id="password"
+                type="text"
+                placeholder="Usuário"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setError('');
+                }}
+                className="h-14 rounded-2xl bg-secondary/50 border-0 text-base pl-12 pr-4 placeholder:text-muted-foreground/40 focus-visible:ring-2 focus-visible:ring-apple-blue/30 transition-all font-bold"
+              />
+            </div>
+
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <Lock className="w-4 h-4" />
+              </div>
+              <Input
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Sua senha..."
+                placeholder="Senha"
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
                   setError('');
                 }}
-                className="h-14 rounded-2xl bg-secondary/50 border-0 text-base pl-5 pr-12 placeholder:text-muted-foreground/40 focus-visible:ring-2 focus-visible:ring-apple-blue/30 focus-visible:bg-white dark:focus-visible:bg-zinc-800 transition-all font-medium"
+                className="h-14 rounded-2xl bg-secondary/50 border-0 text-base pl-12 pr-12 placeholder:text-muted-foreground/40 focus-visible:ring-2 focus-visible:ring-apple-blue/30 transition-all font-bold"
               />
               <button
                 type="button"
@@ -125,30 +141,19 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              disabled={!password || isLoading}
+              disabled={!username || !password || isLoading}
               className="w-full h-14 rounded-2xl bg-apple-blue hover:bg-apple-blue-dark text-white font-black text-base shadow-xl shadow-apple-blue/30 transition-all duration-300 active:scale-[0.98]"
             >
               {isLoading ? (
                 <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <span className="flex items-center gap-2">
-                  ENTRAR NO SISTEMA
+                  ENTRAR
                   <ArrowRight className="w-5 h-5" />
                 </span>
               )}
             </Button>
           </form>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center mt-10"
-        >
-          <p className="text-[10px] text-white/50 font-black uppercase tracking-[0.2em]">
-            Acesso Restrito
-          </p>
         </motion.div>
       </motion.div>
     </div>
