@@ -154,8 +154,8 @@ export function TopBar() {
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="flex items-center gap-2.5 p-1.5 hover:bg-white/10 rounded-xl group transition-all"
           >
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg">
-              <User className="w-4 h-4 text-[var(--app-frame)]" />
+            <div className="w-8 h-8 rounded-full bg-white dark:bg-zinc-800 flex items-center justify-center shadow-lg">
+              <User className="w-4 h-4 text-[var(--app-frame)] dark:text-apple-blue" />
             </div>
             <ChevronDown className={`w-3 h-3 text-white/50 group-hover:text-white transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} />
           </button>
@@ -242,7 +242,7 @@ export function Sidebar() {
                 <div
                   className={`flex items-center gap-3.5 px-3.5 py-3 rounded-2xl text-[13px] font-black tracking-tight transition-all ${
                     isActive
-                      ? 'bg-white text-[var(--app-frame)] shadow-2xl shadow-black/20 scale-[1.03]'
+                      ? 'bg-white dark:bg-zinc-800 text-[var(--app-frame)] dark:text-apple-blue shadow-2xl shadow-black/20 scale-[1.03]'
                       : 'text-white/60 hover:bg-white/10 hover:text-white'
                   }`}
                 >
@@ -286,8 +286,8 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-t border-border/10 pb-[env(safe-area-inset-bottom)]">
-      <nav className="flex items-center justify-around h-16">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t border-border/10 pb-[env(safe-area-inset-bottom)]">
+      <nav className="flex items-center justify-around h-14">
         {navItems.slice(0, 5).map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -295,10 +295,10 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center gap-1 py-1 px-3 min-w-[64px]"
+              className="flex flex-col items-center justify-center gap-0.5 py-1 px-2 min-w-[60px]"
             >
               <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-apple-blue' : 'text-muted-foreground'}`} />
-              <span className={`text-[10px] font-black uppercase tracking-tighter ${isActive ? 'text-apple-blue' : 'text-muted-foreground'}`}>
+              <span className={`text-[9px] font-black uppercase tracking-tighter ${isActive ? 'text-apple-blue' : 'text-muted-foreground'}`}>
                 {item.label}
               </span>
             </Link>

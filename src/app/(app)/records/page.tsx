@@ -65,7 +65,7 @@ export default function RecordsPage() {
               placeholder="Buscar registros..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-12 rounded-2xl bg-white border border-border/40 pl-11 focus-visible:ring-2 focus-visible:ring-apple-blue/30"
+              className="h-12 rounded-2xl bg-white dark:bg-zinc-900 border border-border/40 pl-11 focus-visible:ring-2 focus-visible:ring-apple-blue/30"
             />
           </div>
 
@@ -78,7 +78,7 @@ export default function RecordsPage() {
                 className={`text-xs font-medium px-3 py-1.5 rounded-xl whitespace-nowrap transition-all ${
                   selectedType === type.key
                     ? 'bg-apple-blue text-white shadow-md shadow-apple-blue/20'
-                    : 'bg-white text-muted-foreground hover:text-foreground border border-border/40'
+                    : 'bg-white dark:bg-zinc-900 text-muted-foreground hover:text-foreground border border-border/40'
                 }`}
               >
                 {type.label}
@@ -92,7 +92,7 @@ export default function RecordsPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-3xl border border-border/40 overflow-hidden"
+          className="bg-white dark:bg-zinc-900 rounded-3xl border border-border/40 overflow-hidden"
         >
           <div className="divide-y divide-border/30">
             {filteredRecords.length === 0 ? (
@@ -112,7 +112,7 @@ export default function RecordsPage() {
                 >
                   <div
                     className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
-                      record.amount >= 0 ? 'bg-emerald-50' : 'bg-red-50'
+                      record.amount >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20'
                     }`}
                   >
                     {record.amount >= 0 ? (

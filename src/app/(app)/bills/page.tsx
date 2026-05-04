@@ -59,7 +59,7 @@ export default function BillsPage() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl border border-border/40 p-6"
+          className="bg-white dark:bg-zinc-900 rounded-3xl border border-border/40 p-6"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -88,7 +88,7 @@ export default function BillsPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-3xl border border-border/40 overflow-hidden"
+          className="bg-white dark:bg-zinc-900 rounded-3xl border border-border/40 overflow-hidden"
         >
           <div className="px-6 py-4 border-b border-border/40">
             <h3 className="text-base font-semibold text-foreground">
@@ -199,7 +199,7 @@ export default function BillsPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-3xl border border-border/40 overflow-hidden"
+            className="bg-white dark:bg-zinc-900 rounded-3xl border border-border/40 overflow-hidden"
           >
             <div className="px-6 py-4 border-b border-border/40">
               <h3 className="text-base font-semibold text-muted-foreground">

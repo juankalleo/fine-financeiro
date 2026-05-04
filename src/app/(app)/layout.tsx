@@ -24,8 +24,8 @@ export default function AppLayout({
 
   if (isLoading || !isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-apple-blue">
-        <div className="w-16 h-16 rounded-3xl bg-white flex items-center justify-center shadow-2xl animate-pulse">
+      <div className="min-h-screen flex items-center justify-center bg-background dark:bg-zinc-950">
+        <div className="w-16 h-16 rounded-3xl bg-white dark:bg-zinc-900 flex items-center justify-center shadow-2xl animate-pulse">
            <div className="w-8 h-8 border-4 border-apple-blue/30 border-t-apple-blue rounded-full animate-spin" />
         </div>
       </div>
@@ -47,7 +47,7 @@ export default function AppLayout({
           {/* Main Content Frame - Full Width, rounded only on the left side */}
           <div className="flex-1 mt-14 lg:mt-14 bg-background dark:bg-zinc-950 lg:rounded-tl-[40px] lg:rounded-bl-[40px] relative overflow-hidden shadow-2xl">
              <main className="absolute inset-0 overflow-y-auto no-scrollbar scroll-smooth">
-                <div className="w-full px-6 sm:px-12 lg:px-16 pt-[env(safe-area-inset-top)] pb-32 lg:py-12">
+                <div className="w-full px-6 sm:px-12 lg:px-16 pt-[env(safe-area-inset-top)] pb-24 lg:py-12">
                   {children}
                 </div>
              </main>

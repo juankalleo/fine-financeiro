@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   title: 'Fine — Gestão Financeira Premium',
   description: 'Controle suas finanças com elegância e simplicidade.',
   manifest: '/manifest.json',
-  themeColor: '#000000',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
