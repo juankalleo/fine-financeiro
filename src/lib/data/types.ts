@@ -73,6 +73,7 @@ export interface AppData {
   notifications: Notification[];
   lastProcessedDate: string;
   userName: string;
+  updatedAt?: string;
 }
 
 export type RecordType = Record['type'];

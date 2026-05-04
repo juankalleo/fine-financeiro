@@ -1,8 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef, useState } from 'react';
 import { AppData, Subscription, Bill, Record, Reserve, Notification } from './types';
 import { initialData } from './initial-data';
+import { toast } from 'sonner';
 
 const STORAGE_KEY = 'fine_data_v2';
 
@@ -34,11 +35,12 @@ function saveLocalData(data: AppData): void {
 
 async function syncToKV(data: AppData) {
   try {
-    await fetch('/api/sync', {
+    const res = await fetch('/api/sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, updatedAt: new Date().toISOString() }),
     });
+    if (!res.ok) throw new Error('Sync failed');
   } catch (error) {
     console.warn('KV Sync failed', error);
   }
@@ -47,6 +49,7 @@ async function syncToKV(data: AppData) {
 async function loadFromKV(): Promise<AppData | null> {
   try {
     const res = await fetch('/api/sync');
+    if (!res.ok) return null;
     const data = await res.json();
     if (data && data.wallet) return data as AppData;
   } catch (error) {
@@ -218,12 +221,9 @@ function reducer(state: AppData, action: Action): AppData {
         `${amount >= 0 ? 'Depósito' : 'Retirada'} em ${reserve.name}: ${reason}`,
         amount,
         state.wallet.currentBalance,
-        state.wallet.currentBalance // Note: Reserve transactions usually don't affect wallet balance in this model unless we explicitly want to.
-        // Actually, if I "add" money to a reserve, where does it come from? 
-        // User probably expects it to come from currentBalance if they are "adding" to a goal.
+        state.wallet.currentBalance
       );
 
-      // In this specific finance model, if we "add" to reserve, we deduct from wallet balance.
       const newWalletBalance = state.wallet.currentBalance - amount;
 
       newState = {
@@ -323,6 +323,7 @@ function reducer(state: AppData, action: Action): AppData {
       return state;
   }
 
+  newState = { ...newState, updatedAt: new Date().toISOString() };
   saveLocalData(newState);
   syncToKV(newState);
   return newState;
@@ -331,6 +332,7 @@ function reducer(state: AppData, action: Action): AppData {
 interface AppContextType {
   data: AppData;
   dispatch: React.Dispatch<Action>;
+  isSyncing: boolean;
   exportData: () => string;
   importData: (jsonStr: string) => boolean;
 }
@@ -339,23 +341,45 @@ const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [data, dispatch] = useReducer(reducer, initialData);
+  const [isSyncing, setIsSyncing] = useState(true);
+  const isFirstLoad = useRef(true);
 
   useEffect(() => {
     async function init() {
+      setIsSyncing(true);
       const local = loadLocalData();
       const kvData = await loadFromKV();
-      if (kvData) {
+      
+      // Compare versions if both exist
+      if (kvData && local) {
+        const kvDate = new Date(kvData.updatedAt || 0).getTime();
+        const localDate = new Date(local.updatedAt || 0).getTime();
+        
+        if (kvDate >= localDate) {
+          dispatch({ type: 'SET_DATA', payload: kvData });
+        } else {
+          dispatch({ type: 'SET_DATA', payload: local });
+          // If local is newer, sync it to KV immediately
+          syncToKV(local);
+        }
+      } else if (kvData) {
         dispatch({ type: 'SET_DATA', payload: kvData });
       } else {
         dispatch({ type: 'SET_DATA', payload: local });
       }
+      
+      setIsSyncing(false);
+      isFirstLoad.current = false;
     }
     init();
   }, []);
 
+  // Process auto charges when data is loaded or day changes
   useEffect(() => {
-    dispatch({ type: 'PROCESS_AUTO_CHARGES' });
-  }, [data.wallet.incomeUpdateDate]);
+    if (!isSyncing) {
+      dispatch({ type: 'PROCESS_AUTO_CHARGES' });
+    }
+  }, [data.wallet.incomeUpdateDate, isSyncing]);
 
   const exportData = useCallback(() => JSON.stringify(data, null, 2), [data]);
   const importData = useCallback((jsonStr: string) => {
@@ -369,7 +393,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch { return false; }
   }, []);
 
-  return <AppContext.Provider value={{ data, dispatch, exportData, importData }}>{children}</AppContext.Provider>;
+  return (
+    <AppContext.Provider value={{ data, dispatch, isSyncing, exportData, importData }}>
+      {isSyncing && (
+        <div className="fixed top-4 right-4 z-[100]">
+          <div className="bg-apple-blue text-white px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center gap-2 animate-pulse">
+            <div className="w-2 h-2 rounded-full bg-white animate-ping" />
+            Sincronizando Nuvem...
+          </div>
+        </div>
+      )}
+      {children}
+    </AppContext.Provider>
+  );
 }
 
 export function useAppData() {
