@@ -14,14 +14,14 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'FinanceApp — Gestão Financeira',
-  description:
-    'Gerencie suas finanças pessoais com elegância. Assinaturas, contas, reservas e muito mais.',
+  title: 'Fine — Gestão Financeira Premium',
+  description: 'Controle suas finanças com elegância e simplicidade.',
   manifest: '/manifest.json',
+  themeColor: '#000000',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
-    title: 'FinanceApp',
+    statusBarStyle: 'black-translucent',
+    title: 'Fine',
   },
   formatDetection: {
     telephone: false,
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#007AFF',
+  themeColor: '#000000',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
