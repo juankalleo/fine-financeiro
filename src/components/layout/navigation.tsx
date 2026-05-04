@@ -49,13 +49,14 @@ export function MobileTopBar() {
   };
 
   return (
-    <div className="lg:hidden fixed top-0 left-0 right-0 h-14 px-6 flex items-center justify-between z-40 bg-background/80 backdrop-blur-md border-b border-border/10">
-      <div className="flex items-center gap-2">
-        <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shadow-lg border border-border/10 overflow-hidden">
-          <Image src="/icons/icon-192.png" alt="F" width={28} height={28} className="object-contain" />
+    <div className="lg:hidden fixed top-0 left-0 right-0 pt-[env(safe-area-inset-top)] z-40 bg-background/80 backdrop-blur-md border-b border-border/10">
+      <div className="h-14 px-6 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-lg border border-border/10 overflow-hidden">
+            <Image src="/icons/icon-192.png" alt="F" width={24} height={24} className="object-contain" />
+          </div>
+          <span className="text-xl font-black uppercase tracking-tighter text-apple-blue">Fine</span>
         </div>
-        <span className="text-xl font-black uppercase tracking-tighter text-apple-blue">Fine</span>
-      </div>
 
       <div className="flex items-center gap-2">
         <button
@@ -284,8 +285,8 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--app-frame)] border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
-      <nav className="flex items-center justify-around py-2">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-t border-border/10 pb-[env(safe-area-inset-bottom)]">
+      <nav className="flex items-center justify-around h-16">
         {navItems.slice(0, 5).map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -293,10 +294,10 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center gap-1 py-1 px-3 min-w-[56px]"
+              className="flex flex-col items-center gap-1 py-1 px-3 min-w-[64px]"
             >
-              <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-white/50'}`} />
-              <span className={`text-[10px] font-bold ${isActive ? 'text-white' : 'text-white/50'}`}>
+              <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-apple-blue' : 'text-muted-foreground'}`} />
+              <span className={`text-[10px] font-black uppercase tracking-tighter ${isActive ? 'text-apple-blue' : 'text-muted-foreground'}`}>
                 {item.label}
               </span>
             </Link>
@@ -306,3 +307,4 @@ export function BottomNav() {
     </div>
   );
 }
+
