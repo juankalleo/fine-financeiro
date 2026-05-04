@@ -49,12 +49,12 @@ export function MobileTopBar() {
   };
 
   return (
-    <div className="lg:hidden fixed top-0 left-0 right-0 h-14 px-6 flex items-center justify-between z-40 bg-background/80 backdrop-blur-md">
+    <div className="lg:hidden fixed top-0 left-0 right-0 h-14 px-6 flex items-center justify-between z-40 bg-background/80 backdrop-blur-md border-b border-border/10">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-xl bg-apple-blue flex items-center justify-center">
-          <Image src="/icons/icon-192.png" alt="F" width={20} height={20} className="invert brightness-0" />
+        <div className="w-9 h-9 rounded-xl bg-apple-blue flex items-center justify-center shadow-lg shadow-apple-blue/20">
+          <Image src="/icons/icon-192.png" alt="F" width={24} height={24} className="object-contain" />
         </div>
-        <span className="text-lg font-black uppercase tracking-tighter">Fine</span>
+        <span className="text-xl font-black uppercase tracking-tighter text-apple-blue">Fine</span>
       </div>
 
       <div className="flex items-center gap-2">
