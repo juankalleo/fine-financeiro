@@ -15,7 +15,10 @@ function loadLocalData(): AppData {
   if (typeof window === 'undefined') return initialData;
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) return JSON.parse(stored);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return { ...initialData, ...parsed };
+    }
   } catch { }
   return initialData;
 }
@@ -44,7 +47,7 @@ async function loadFromKV(): Promise<AppData | null> {
     const res = await fetch('/api/sync');
     if (!res.ok) return null;
     const data = await res.json();
-    if (data && (data.wallet || data.records)) return data as AppData;
+    if (data && (data.wallet || data.records)) return { ...initialData, ...data } as AppData;
   } catch (error) { }
   return null;
 }
@@ -179,7 +182,7 @@ function reducer(state: AppData, action: Action): AppData {
 
     case 'ADD_LANCAMENTO': {
       const newLanc = { ...action.payload, id: generateId() };
-      let updatedState = { ...state, lancamentos: [...state.lancamentos, newLanc] };
+      let updatedState = { ...state, lancamentos: [...(state.lancamentos || []), newLanc] };
       
       if (newLanc.executed) {
         // If it's already executed upon creation (e.g. "atualizar agora"), update balance immediately
@@ -201,22 +204,22 @@ function reducer(state: AppData, action: Action): AppData {
     }
 
     case 'UPDATE_LANCAMENTO':
-      newState = { ...state, lancamentos: state.lancamentos.map(l => l.id === action.payload.id ? action.payload : l) };
+      newState = { ...state, lancamentos: (state.lancamentos || []).map(l => l.id === action.payload.id ? action.payload : l) };
       break;
 
     case 'REMOVE_LANCAMENTO':
-      newState = { ...state, lancamentos: state.lancamentos.filter(l => l.id !== action.payload) };
+      newState = { ...state, lancamentos: (state.lancamentos || []).filter(l => l.id !== action.payload) };
       break;
 
     case 'EXECUTE_LANCAMENTO': {
-      const lanc = state.lancamentos.find(l => l.id === action.payload);
+      const lanc = (state.lancamentos || []).find(l => l.id === action.payload);
       if (!lanc || lanc.executed) return state;
       const effect = lanc.type === 'income' ? lanc.amount : -lanc.amount;
       const nextBal = state.wallet.currentBalance + effect;
       newState = {
         ...state,
         wallet: { ...state.wallet, currentBalance: nextBal },
-        lancamentos: state.lancamentos.map(l => l.id === action.payload ? { ...l, executed: true } : l),
+        lancamentos: (state.lancamentos || []).map(l => l.id === action.payload ? { ...l, executed: true } : l),
         records: [createRecord('lancamento_executed', `Lançamento: ${lanc.description}`, effect, state.wallet.currentBalance, nextBal), ...state.records],
       };
       break;
@@ -276,8 +279,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     async function init() {
       const kv = await loadFromKV();
       if (kv) {
-        dispatch({ type: 'SET_DATA', payload: kv });
-        saveLocalData(kv);
+        dispatch({ type: 'SET_DATA', payload: { ...initialData, ...kv } });
+        saveLocalData({ ...initialData, ...kv });
       } else {
         dispatch({ type: 'SET_DATA', payload: loadLocalData() });
       }
