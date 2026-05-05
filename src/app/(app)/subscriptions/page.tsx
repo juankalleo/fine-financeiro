@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppData } from '@/lib/data/store';
-import { formatCurrency, getDaysUntilBilling } from '@/lib/helpers';
+import { formatCurrency, getDaysUntilBilling, formatDate } from '@/lib/helpers';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import {
   Dialog,
@@ -22,11 +23,13 @@ import {
   AlertCircle,
   Clock,
   CheckCircle2,
+  ChevronLeft,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Subscription } from '@/lib/data/types';
 
 export default function SubscriptionsPage() {
+  const router = useRouter();
   const { data, dispatch } = useAppData();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Subscription | null>(null);
@@ -50,40 +53,60 @@ export default function SubscriptionsPage() {
 
   return (
     <>
-      <Header
-        title="Assinaturas"
-        subtitle={`${activeSubscriptions.length} ativas • ${formatCurrency(totalMonthly)}/mês`}
-      />
+      {/* Hero Section - Edge to Edge Design */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="-mx-6 -mt-8 mb-8"
+      >
+        <div className="relative overflow-hidden bg-gradient-to-br from-apple-blue to-sky-600 rounded-b-[40px] px-6 pb-10 pt-[calc(env(safe-area-inset-top)+32px)] text-white shadow-2xl shadow-apple-blue/20">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
+          
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-8">
+              <button 
+                onClick={() => router.back()}
+                className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10"
+              >
+                <ChevronLeft className="w-6 h-6 text-white" />
+              </button>
+              <div className="text-right">
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Assinaturas</p>
+                <p className="text-xs font-bold">{formatDate(new Date().toISOString())}</p>
+              </div>
+            </div>
+
+            <div className="text-center space-y-2">
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Gasto Mensal</p>
+              <h1 className="text-5xl font-black tracking-tighter">
+                {formatCurrency(totalMonthly)}
+              </h1>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/10">
+                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                <span className="text-[10px] font-bold uppercase tracking-tight">
+                  {activeSubscriptions.length} serviços ativos
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-10 flex justify-center">
+              <Button
+                onClick={() => {
+                  setEditing(null);
+                  setShowForm(true);
+                }}
+                className="h-14 px-8 rounded-2xl bg-white text-apple-blue hover:bg-white/90 font-black shadow-xl shadow-black/10 gap-2 text-sm uppercase tracking-tight"
+              >
+                <Plus className="w-5 h-5" />
+                Nova Assinatura
+              </Button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
 
       <div className="space-y-6">
-        {/* Summary Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-zinc-900 rounded-3xl border border-border/40 p-6"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground font-medium">
-                Total Mensal em Assinaturas
-              </p>
-              <p className="text-3xl font-bold text-foreground mt-1">
-                {formatCurrency(totalMonthly)}
-              </p>
-            </div>
-            <Button
-              onClick={() => {
-                setEditing(null);
-                setShowForm(true);
-              }}
-              className="h-11 rounded-xl bg-apple-blue hover:bg-apple-blue-dark text-white shadow-lg shadow-apple-blue/20 gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Nova
-            </Button>
-          </div>
-        </motion.div>
-
         {/* Active Subscriptions */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}

@@ -38,11 +38,10 @@ export default function LancamentosPage() {
 
   return (
     <>
-      <Header />
+      <Header title="Lançamentos" />
 
       <div className="space-y-6 pb-24 lg:pb-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-black tracking-tight">Lançamentos</h1>
+        <div className="flex items-center justify-end">
           <Button
             onClick={() => setShowDialog(true)}
             className="h-10 rounded-xl bg-apple-blue hover:bg-apple-blue-dark text-white shadow-lg shadow-apple-blue/20 gap-2"
