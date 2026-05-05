@@ -225,8 +225,8 @@ export function BottomNav() {
   ];
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/5 pb-[env(safe-area-inset-bottom)]">
-      <nav className="flex items-center justify-around h-16 px-2">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-2xl border-t border-white/[0.05] pb-[calc(env(safe-area-inset-bottom)-8px)]">
+      <nav className="flex items-center justify-around h-14 px-2">
         {mobileItems.map((item, index) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -237,16 +237,16 @@ export function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="relative flex flex-col items-center justify-center -mt-6"
+                className="relative flex flex-col items-center justify-center -mt-4"
               >
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-300 ${
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-500 ${
                   isActive 
                     ? 'bg-apple-blue text-white scale-110 shadow-apple-blue/40' 
                     : 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-black/20'
                 }`}>
-                  <Icon className="w-7 h-7" />
+                  <Icon className="w-6 h-6" />
                 </div>
-                <span className={`text-[8px] font-black uppercase tracking-tighter mt-1.5 ${isActive ? 'text-apple-blue' : 'text-muted-foreground'}`}>
+                <span className={`text-[7px] font-black uppercase tracking-tighter mt-1 ${isActive ? 'text-apple-blue' : 'text-muted-foreground'}`}>
                   {item.label}
                 </span>
               </Link>
@@ -257,10 +257,10 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center justify-center gap-1 py-2 px-1 min-w-[60px]"
+              className="flex flex-col items-center justify-center gap-0.5 py-1 px-1 min-w-[60px]"
             >
-              <Icon className={`w-5 h-5 transition-all ${isActive ? 'text-apple-blue' : 'text-muted-foreground opacity-60'}`} />
-              <span className={`text-[8px] font-black uppercase tracking-tighter ${isActive ? 'text-apple-blue' : 'text-muted-foreground opacity-60'}`}>
+              <Icon className={`w-4.5 h-4.5 transition-all ${isActive ? 'text-apple-blue' : 'text-muted-foreground opacity-60'}`} />
+              <span className={`text-[7px] font-black uppercase tracking-tighter ${isActive ? 'text-apple-blue' : 'text-muted-foreground opacity-60'}`}>
                 {item.label}
               </span>
             </Link>
