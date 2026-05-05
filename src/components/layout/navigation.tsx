@@ -225,7 +225,7 @@ export function BottomNav() {
   ];
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-2xl border-t border-white/[0.05] pb-[calc(env(safe-area-inset-bottom)-8px)]">
+    <div className="lg:hidden shrink-0 z-50 bg-background/80 backdrop-blur-2xl border-t border-white/[0.05] pb-[calc(env(safe-area-inset-bottom)-8px)]">
       <nav className="flex items-center justify-around h-14 px-2">
         {mobileItems.map((item, index) => {
           const isActive = pathname === item.href;
