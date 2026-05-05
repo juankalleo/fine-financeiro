@@ -24,6 +24,7 @@ import {
   Clock,
   CheckCircle2,
   ChevronLeft,
+  X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Subscription } from '@/lib/data/types';
@@ -51,30 +52,81 @@ export default function SubscriptionsPage() {
     setShowForm(true);
   };
 
+  const [isAdding, setIsAdding] = useState(false);
+  const [name, setName] = useState('');
+  const [amount, setAmount] = useState('');
+  const [billingDay, setBillingDay] = useState('1');
+  const [icon, setIcon] = useState('💳');
+
+  const resetLocalForm = () => {
+    setName('');
+    setAmount('');
+    setBillingDay('1');
+    setIcon('💳');
+    setIsAdding(false);
+  };
+
+  const handleAddSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsedAmount = parseFloat(amount.replace(',', '.'));
+    const parsedDay = parseInt(billingDay);
+
+    if (!name.trim()) return toast.error('Informe o nome');
+    if (isNaN(parsedAmount) || parsedAmount <= 0) return toast.error('Valor inválido');
+    if (isNaN(parsedDay) || parsedDay < 1 || parsedDay > 31) return toast.error('Dia inválido');
+
+    dispatch({
+      type: 'ADD_SUBSCRIPTION',
+      payload: {
+        name: name.trim(),
+        amount: parsedAmount,
+        billingDay: parsedDay,
+        icon,
+        active: true,
+      },
+    });
+    toast.success('Assinatura adicionada');
+    resetLocalForm();
+  };
+
   return (
     <>
-      {/* Hero Section - Edge to Edge Design */}
+      {/* Hero Section - Dynamic & Expandable */}
       <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="-mx-6 -mt-8 mb-8"
+        initial={false}
+        animate={{ 
+          height: isAdding ? 'auto' : 'auto',
+          marginBottom: isAdding ? '2rem' : '2rem'
+        }}
+        className="-mx-6 -mt-8 overflow-hidden"
       >
-        <div className="relative overflow-hidden bg-gradient-to-br from-apple-blue to-sky-600 rounded-b-[40px] px-6 pb-10 pt-[calc(env(safe-area-inset-top)+32px)] text-white shadow-2xl shadow-apple-blue/20">
+        <div className="relative bg-gradient-to-br from-apple-blue to-sky-600 rounded-b-[40px] px-6 pb-10 pt-[calc(env(safe-area-inset-top)+40px)] text-white shadow-2xl shadow-apple-blue/20 transition-all duration-500">
           {/* Decorative Elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
           
           <div className="relative z-10">
+            {/* Header Top Row */}
             <div className="flex items-center justify-between mb-8">
               <button 
                 onClick={() => router.back()}
-                className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10"
+                className={`w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all ${isAdding ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'}`}
               >
                 <ChevronLeft className="w-6 h-6 text-white" />
               </button>
-              <div className="text-right">
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Assinaturas</p>
+              
+              <div className="text-center absolute left-1/2 -translate-x-1/2">
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-70">
+                  {isAdding ? 'Nova Assinatura' : 'Assinaturas'}
+                </p>
                 <p className="text-xs font-bold">{formatDate(new Date().toISOString())}</p>
               </div>
+
+              <button 
+                onClick={() => isAdding ? resetLocalForm() : null}
+                className={`w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all ${!isAdding ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'}`}
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
             </div>
 
             <div className="text-center space-y-2">
@@ -90,18 +142,95 @@ export default function SubscriptionsPage() {
               </div>
             </div>
 
-            <div className="mt-10 flex justify-center">
-              <Button
-                onClick={() => {
-                  setEditing(null);
-                  setShowForm(true);
-                }}
-                className="h-14 px-8 rounded-2xl bg-white text-apple-blue hover:bg-white/90 font-black shadow-xl shadow-black/10 gap-2 text-sm uppercase tracking-tight"
-              >
-                <Plus className="w-5 h-5" />
-                Nova Assinatura
-              </Button>
-            </div>
+            <AnimatePresence>
+              {!isAdding ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="mt-8 flex justify-center"
+                >
+                  <Button
+                    onClick={() => setIsAdding(true)}
+                    className="h-14 px-8 rounded-2xl bg-white text-apple-blue hover:bg-white/90 font-black shadow-xl shadow-black/10 gap-2 text-sm uppercase tracking-tight"
+                  >
+                    <Plus className="w-5 h-5" />
+                    Nova Assinatura
+                  </Button>
+                </motion.div>
+              ) : (
+                <motion.form
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                  onSubmit={handleAddSubmit}
+                  className="overflow-hidden mt-8 space-y-6"
+                >
+                  <div className="h-px bg-white/10 w-full mb-6" />
+                  
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-black uppercase tracking-widest opacity-70 ml-1 text-white">Serviço</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={icon}
+                          onChange={(e) => setIcon(e.target.value)}
+                          className="w-14 h-14 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/40 text-center text-2xl focus:ring-white/30"
+                          placeholder="🎬"
+                        />
+                        <Input
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="h-14 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/40 font-bold focus:ring-white/30 flex-1"
+                          placeholder="Ex: Netflix, Spotify..."
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-[10px] font-black uppercase tracking-widest opacity-70 ml-1 text-white">Valor (R$)</Label>
+                        <Input
+                          value={amount}
+                          onChange={(e) => setAmount(e.target.value)}
+                          className="h-14 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/40 font-bold focus:ring-white/30"
+                          placeholder="0,00"
+                          inputMode="decimal"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[10px] font-black uppercase tracking-widest opacity-70 ml-1 text-white">Dia Cobrança</Label>
+                        <Input
+                          value={billingDay}
+                          onChange={(e) => setBillingDay(e.target.value)}
+                          className="h-14 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/40 font-bold focus:ring-white/30"
+                          placeholder="1"
+                          type="number"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      type="button"
+                      onClick={() => setIsAdding(false)}
+                      variant="ghost"
+                      className="flex-1 h-14 rounded-2xl text-white hover:bg-white/10 font-bold uppercase text-xs"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="flex-1 h-14 rounded-2xl bg-white text-apple-blue hover:bg-white/90 font-black shadow-xl shadow-black/10 uppercase text-xs"
+                    >
+                      Salvar Assinatura
+                    </Button>
+                  </div>
+                </motion.form>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </motion.div>
