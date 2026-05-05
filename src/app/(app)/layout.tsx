@@ -41,13 +41,12 @@ export default function AppLayout({
             isSidebarCollapsed ? 'lg:ml-14' : 'lg:ml-64'
           }`}
         >
-          <MobileTopBar />
           <TopBar />
           
           {/* Main Content Frame - Full Width, rounded only on the left side */}
-          <div className="flex-1 mt-14 lg:mt-14 bg-background dark:bg-zinc-950 lg:rounded-tl-[40px] lg:rounded-bl-[40px] relative overflow-hidden shadow-2xl">
+          <div className="flex-1 lg:mt-14 bg-background dark:bg-zinc-950 lg:rounded-tl-[40px] lg:rounded-bl-[40px] relative overflow-hidden shadow-2xl">
              <main className="absolute inset-0 overflow-y-auto no-scrollbar scroll-smooth">
-                <div className="w-full px-6 sm:px-12 lg:px-16 pt-[env(safe-area-inset-top)] pb-24 lg:py-12">
+                <div className="w-full px-6 sm:px-12 lg:px-16 pt-0 lg:py-12">
                   {children}
                 </div>
              </main>

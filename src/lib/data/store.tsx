@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef, useState } from 'react';
-import { AppData, Subscription, Bill, Record, Reserve, Notification } from './types';
+import { AppData, Subscription, Bill, Record, Reserve, Notification, Lancamento } from './types';
 import { initialData } from './initial-data';
 import { toast } from 'sonner';
 
@@ -67,7 +67,11 @@ type Action =
   | { type: 'ADD_NOTIFICATION'; payload: Omit<Notification, 'id' | 'date'> }
   | { type: 'PROCESS_AUTO_CHARGES' }
   | { type: 'UPDATE_USERNAME'; payload: string }
-  | { type: 'RESET_DATA' };
+  | { type: 'RESET_DATA' }
+  | { type: 'ADD_LANCAMENTO'; payload: Omit<Lancamento, 'id'> }
+  | { type: 'UPDATE_LANCAMENTO'; payload: Lancamento }
+  | { type: 'REMOVE_LANCAMENTO'; payload: string }
+  | { type: 'EXECUTE_LANCAMENTO'; payload: string };
 
 function createRecord(type: Record['type'], description: string, amount: number, prev: number, next: number): Record {
   return { id: generateId(), date: new Date().toISOString(), type, description, amount, previousBalance: prev, newBalance: next };
@@ -172,6 +176,51 @@ function reducer(state: AppData, action: Action): AppData {
     case 'ADD_NOTIFICATION':
       newState = { ...state, notifications: [{ ...action.payload, id: generateId(), date: new Date().toISOString() }, ...state.notifications] };
       break;
+
+    case 'ADD_LANCAMENTO': {
+      const newLanc = { ...action.payload, id: generateId() };
+      let updatedState = { ...state, lancamentos: [...state.lancamentos, newLanc] };
+      
+      if (newLanc.executed) {
+        // If it's already executed upon creation (e.g. "atualizar agora"), update balance immediately
+        const effect = newLanc.type === 'income' ? newLanc.amount : -newLanc.amount;
+        const nextBal = state.wallet.currentBalance + effect;
+        updatedState = {
+          ...updatedState,
+          wallet: { ...updatedState.wallet, currentBalance: nextBal },
+          records: [createRecord('lancamento_executed', `Lançamento: ${newLanc.description}`, effect, state.wallet.currentBalance, nextBal), ...state.records],
+        };
+      } else {
+        updatedState = {
+          ...updatedState,
+          records: [createRecord('lancamento_added', `Agendado: ${newLanc.description}`, 0, state.wallet.currentBalance, state.wallet.currentBalance), ...state.records],
+        };
+      }
+      newState = updatedState;
+      break;
+    }
+
+    case 'UPDATE_LANCAMENTO':
+      newState = { ...state, lancamentos: state.lancamentos.map(l => l.id === action.payload.id ? action.payload : l) };
+      break;
+
+    case 'REMOVE_LANCAMENTO':
+      newState = { ...state, lancamentos: state.lancamentos.filter(l => l.id !== action.payload) };
+      break;
+
+    case 'EXECUTE_LANCAMENTO': {
+      const lanc = state.lancamentos.find(l => l.id === action.payload);
+      if (!lanc || lanc.executed) return state;
+      const effect = lanc.type === 'income' ? lanc.amount : -lanc.amount;
+      const nextBal = state.wallet.currentBalance + effect;
+      newState = {
+        ...state,
+        wallet: { ...state.wallet, currentBalance: nextBal },
+        lancamentos: state.lancamentos.map(l => l.id === action.payload ? { ...l, executed: true } : l),
+        records: [createRecord('lancamento_executed', `Lançamento: ${lanc.description}`, effect, state.wallet.currentBalance, nextBal), ...state.records],
+      };
+      break;
+    }
 
     case 'PROCESS_AUTO_CHARGES': {
       const today = new Date().toISOString().split('T')[0];

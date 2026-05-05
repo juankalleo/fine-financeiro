@@ -29,6 +29,7 @@ import { useRouter } from 'next/navigation';
 
 const navItems = [
   { href: '/dashboard', label: 'Início', icon: LayoutDashboard },
+  { href: '/lancamentos', label: 'Lançamentos', icon: Plus },
   { href: '/subscriptions', label: 'Assinaturas', icon: CreditCard },
   { href: '/bills', label: 'Contas', icon: Receipt },
   { href: '/reserves', label: 'Reservas', icon: PiggyBank },
@@ -38,78 +39,7 @@ const navItems = [
 ];
 
 export function MobileTopBar() {
-  const { theme, setTheme } = useTheme();
-  const { logout } = useAuth();
-  const router = useRouter();
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
-  };
-
-  return (
-    <div className="lg:hidden fixed top-0 left-0 right-0 pt-[env(safe-area-inset-top)] z-40 bg-background/80 backdrop-blur-md border-b border-border/10">
-      <div className="h-14 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-lg border border-border/10 overflow-hidden">
-            <Image src="/icons/icon-192.png" alt="F" width={24} height={24} className="object-contain" />
-          </div>
-          <span className="text-xl font-black uppercase tracking-tighter text-apple-blue">Fine</span>
-        </div>
-
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-2 text-muted-foreground"
-        >
-          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </button>
-        
-        <div className="relative">
-          <button 
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="w-10 h-10 rounded-full bg-apple-blue/10 flex items-center justify-center border border-apple-blue/20"
-          >
-            <User className="w-5 h-5 text-apple-blue" />
-          </button>
-
-          <AnimatePresence>
-            {showProfileMenu && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-border/40 py-2 z-50 overflow-hidden"
-                >
-                  <button
-                    onClick={() => {
-                      router.push('/settings');
-                      setShowProfileMenu(false);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold hover:bg-secondary transition-colors"
-                  >
-                    <Settings className="w-4 h-4 text-muted-foreground" />
-                    Ajustes
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Sair
-                  </button>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
-        </div>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 export function TopBar() {
@@ -285,20 +215,52 @@ export function Sidebar() {
 export function BottomNav() {
   const pathname = usePathname();
 
+  // Custom order for mobile to put Lançamentos in the middle
+  const mobileItems = [
+    navItems[0], // Início
+    navItems[2], // Assinaturas
+    navItems[1], // Lançamentos (Middle)
+    navItems[3], // Contas
+    navItems[4], // Reservas
+  ];
+
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t border-border/10 pb-[env(safe-area-inset-bottom)]">
-      <nav className="flex items-center justify-around h-14">
-        {navItems.slice(0, 5).map((item) => {
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/5 pb-[env(safe-area-inset-bottom)]">
+      <nav className="flex items-center justify-around h-16 px-2">
+        {mobileItems.map((item, index) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
+          const isMiddle = index === 2;
+
+          if (isMiddle) {
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="relative flex flex-col items-center justify-center -mt-6"
+              >
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-300 ${
+                  isActive 
+                    ? 'bg-apple-blue text-white scale-110 shadow-apple-blue/40' 
+                    : 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-black/20'
+                }`}>
+                  <Icon className="w-7 h-7" />
+                </div>
+                <span className={`text-[8px] font-black uppercase tracking-tighter mt-1.5 ${isActive ? 'text-apple-blue' : 'text-muted-foreground'}`}>
+                  {item.label}
+                </span>
+              </Link>
+            );
+          }
+
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center justify-center gap-0.5 py-1 px-2 min-w-[60px]"
+              className="flex flex-col items-center justify-center gap-1 py-2 px-1 min-w-[60px]"
             >
-              <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-apple-blue' : 'text-muted-foreground'}`} />
-              <span className={`text-[9px] font-black uppercase tracking-tighter ${isActive ? 'text-apple-blue' : 'text-muted-foreground'}`}>
+              <Icon className={`w-5 h-5 transition-all ${isActive ? 'text-apple-blue' : 'text-muted-foreground opacity-60'}`} />
+              <span className={`text-[8px] font-black uppercase tracking-tighter ${isActive ? 'text-apple-blue' : 'text-muted-foreground opacity-60'}`}>
                 {item.label}
               </span>
             </Link>

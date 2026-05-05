@@ -11,6 +11,7 @@ export const initialData: AppData = {
   bills: [],
   records: [],
   notifications: [],
+  lancamentos: [],
   lastProcessedDate: new Date().toISOString().split('T')[0],
   userName: 'Usuário',
 };

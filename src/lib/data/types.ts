@@ -42,6 +42,16 @@ export interface Notification {
   type: 'email_sent' | 'auto_payment' | 'alert';
 }
 
+export interface Lancamento {
+  id: string;
+  description: string;
+  amount: number;
+  type: 'income' | 'expense';
+  scheduledDate: string;
+  executed: boolean;
+  icon?: string;
+}
+
 export interface Record {
   id: string;
   date: string;
@@ -57,7 +67,10 @@ export interface Record {
     | 'bill_added'
     | 'bill_removed'
     | 'reserve_added'
-    | 'reserve_removed';
+    | 'reserve_removed'
+    | 'lancamento_added'
+    | 'lancamento_executed'
+    | 'lancamento_removed';
   description: string;
   amount: number;
   previousBalance: number;
@@ -71,6 +84,7 @@ export interface AppData {
   bills: Bill[];
   records: Record[];
   notifications: Notification[];
+  lancamentos: Lancamento[];
   lastProcessedDate: string;
   userName: string;
   updatedAt?: string;
@@ -91,6 +105,9 @@ export const RECORD_TYPE_LABELS: { [key in RecordType]: string } = {
   bill_removed: 'Conta Removida',
   reserve_added: 'Reserva Criada',
   reserve_removed: 'Reserva Removida',
+  lancamento_added: 'Lançamento Criado',
+  lancamento_executed: 'Lançamento Executado',
+  lancamento_removed: 'Lançamento Removido',
 };
 
 export const RECORD_TYPE_COLORS: { [key in RecordType]: string } = {
@@ -106,4 +123,7 @@ export const RECORD_TYPE_COLORS: { [key in RecordType]: string } = {
   bill_removed: 'bg-gray-100 text-gray-700',
   reserve_added: 'bg-teal-100 text-teal-700',
   reserve_removed: 'bg-gray-100 text-gray-700',
+  lancamento_added: 'bg-indigo-100 text-indigo-700',
+  lancamento_executed: 'bg-emerald-100 text-emerald-700',
+  lancamento_removed: 'bg-gray-100 text-gray-700',
 };

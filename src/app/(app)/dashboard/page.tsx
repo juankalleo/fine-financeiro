@@ -17,11 +17,16 @@ import {
   ArrowDownRight,
   ArrowRight,
   Bell,
+  ChevronRight,
+  Plus,
+  FileText,
 } from 'lucide-react';
 import { Reserve } from '@/lib/data/types';
 import { BalanceEditDialog } from '@/components/dashboard/balance-edit-dialog';
 import { ReserveTransactionDialog } from '@/components/reserves/reserve-transaction-dialog';
+import { MobileHeaderActions } from '@/components/layout/mobile-header-actions';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -50,20 +55,22 @@ export default function DashboardPage() {
 
   return (
     <>
-      <Header />
-
       <div className="space-y-6">
-        {/* Main Balance Card - Simplified for Mobile */}
-        <motion.div {...fadeInUp}>
-          <div className="relative overflow-hidden rounded-[40px] gradient-blue p-8 lg:p-12 text-white shadow-2xl shadow-apple-blue/30">
-            <div className="card-shine absolute inset-0 rounded-[40px]" />
+        {/* Main Balance Card - New Blue Mobile Design - Edge to Edge */}
+        <motion.div {...fadeInUp} className="-mx-6 -mt-0 lg:mt-0">
+          <div className="relative overflow-hidden rounded-b-[40px] lg:rounded-[40px] bg-apple-blue px-6 py-8 lg:p-12 text-white shadow-2xl shadow-apple-blue/30 pt-[calc(env(safe-area-inset-top)+10px)] lg:pt-12">
             <div className="relative z-10">
-              <div className="flex items-center justify-between mb-8">
+              {/* Mobile Top Header (Inside Card) */}
+              <div className="flex items-center justify-between mb-6 lg:hidden">
+                <div>
+                  <p className="text-[10px] font-bold opacity-70 uppercase tracking-widest">{formatDate(new Date().toISOString())}</p>
+                </div>
+                <MobileHeaderActions variant="dark" />
+              </div>
+
+              <div className="flex items-center justify-between mb-6 lg:flex hidden">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center">
-                    <Wallet className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="text-sm font-black tracking-widest uppercase opacity-70">Saldo Disponível</span>
+                  <span className="text-[11px] font-black tracking-widest uppercase opacity-80">Patrimônio Total</span>
                 </div>
                 <button
                   onClick={() => setShowBalanceEdit(true)}
@@ -73,61 +80,104 @@ export default function DashboardPage() {
                 </button>
               </div>
 
-              <div className="mb-4">
+              <div className="mb-4 text-center">
+                <span className="text-[10px] font-black tracking-widest uppercase opacity-60 mb-1 block lg:hidden">Patrimônio Total</span>
                 <h2 className="text-5xl lg:text-7xl font-black tracking-tighter">
                   {formatCurrency(data.wallet.currentBalance)}
                 </h2>
+                <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10">
+                  <TrendingUp className="w-3 h-3 text-emerald-300" />
+                  <span className="text-[10px] font-bold text-white/90">+{formatCurrency(data.wallet.currentIncome)} este mês</span>
+                </div>
               </div>
               
-              {/* Desktop Only Inline Stats */}
-              <div className="hidden lg:grid grid-cols-2 gap-4 mt-10">
-                <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-4 h-4 opacity-70" />
-                    <span className="text-[10px] font-black opacity-70 uppercase tracking-widest">Renda Mensal</span>
-                  </div>
-                  <p className="text-2xl font-black">{formatCurrency(data.wallet.currentIncome)}</p>
+              <div className="grid grid-cols-3 gap-2 mt-6">
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 text-center border border-white/10">
+                  <span className="text-[9px] font-black opacity-70 uppercase tracking-widest block mb-0.5">Receitas</span>
+                  <p className="text-sm font-black">{formatCurrency(data.wallet.currentIncome)}</p>
                 </div>
-                <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <PiggyBank className="w-4 h-4 opacity-70" />
-                    <span className="text-[10px] font-black opacity-70 uppercase tracking-widest">Total Reservado</span>
-                  </div>
-                  <p className="text-2xl font-black">{formatCurrency(totalReserves)}</p>
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 text-center border border-white/10">
+                  <span className="text-[9px] font-black opacity-70 uppercase tracking-widest block mb-0.5">Despesas</span>
+                  <p className="text-sm font-black">{formatCurrency(totalPendingBills + totalSubscriptions)}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 text-center border border-white/10">
+                  <span className="text-[9px] font-black opacity-70 uppercase tracking-widest block mb-0.5">Saldo</span>
+                  <p className="text-sm font-black">{formatCurrency(data.wallet.currentBalance)}</p>
                 </div>
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Mobile Only Separate Stats Cards */}
-        <div className="grid grid-cols-1 gap-4 lg:hidden">
-          <motion.div {...fadeInUp} transition={{ delay: 0.1 }} className="bg-white dark:bg-zinc-900 rounded-[32px] p-6 border border-border/40 shadow-sm flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-apple-blue/10 flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-apple-blue" />
+        {/* Minhas Contas Section */}
+        <motion.div {...fadeInUp} transition={{ delay: 0.1 }} className="space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <h3 className="text-lg font-black tracking-tight">Minhas Contas</h3>
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+          </div>
+          
+          <div className="flex gap-3 overflow-x-auto pb-4 -mx-6 px-6 no-scrollbar">
+            {/* Salário Card */}
+            <div className="min-w-[130px] bg-apple-green text-white rounded-[28px] p-4 shadow-lg shadow-apple-green/20 flex flex-col justify-between aspect-square shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center">
+                <Wallet className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Renda Mensal</p>
-                <p className="text-xl font-black">{formatCurrency(data.wallet.currentIncome)}</p>
+                <p className="text-[11px] font-medium opacity-90 mb-1">Salário</p>
+                <p className="text-lg font-black">{formatCurrency(data.wallet.currentIncome)}</p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-muted-foreground/30" />
-          </motion.div>
 
-          <motion.div {...fadeInUp} transition={{ delay: 0.15 }} className="bg-white dark:bg-zinc-900 rounded-[32px] p-6 border border-border/40 shadow-sm flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-apple-green/10 flex items-center justify-center">
-                <PiggyBank className="w-6 h-6 text-apple-green" />
+            {/* Reservas Cards */}
+            {data.reserves.map(reserve => (
+              <div key={reserve.id} className="min-w-[130px] bg-white dark:bg-zinc-900 border border-border/40 rounded-[28px] p-4 flex flex-col justify-between aspect-square shrink-0 shadow-sm relative overflow-hidden">
+                <div className="absolute top-3 right-3 text-[8px] font-black uppercase tracking-widest bg-secondary px-2 py-1 rounded-md text-muted-foreground">
+                  Reserva
+                </div>
+                <div 
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center"
+                  style={{ backgroundColor: `${reserve.color}20` }}
+                >
+                  <PiggyBank className="w-5 h-5" style={{ color: reserve.color }} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-medium text-muted-foreground mb-1 truncate">{reserve.name}</p>
+                  <p className="text-lg font-black text-foreground">{formatCurrency(reserve.amount)}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Total em Reservas</p>
-                <p className="text-xl font-black">{formatCurrency(totalReserves)}</p>
+            ))}
+
+            {/* Lançamentos Pendentes Cards */}
+            {data.lancamentos?.filter(l => !l.executed).map(lanc => (
+              <div key={lanc.id} className="min-w-[130px] bg-white dark:bg-zinc-900 border border-border/40 rounded-[28px] p-4 flex flex-col justify-between aspect-square shrink-0 shadow-sm relative overflow-hidden">
+                <div className="absolute top-3 right-3 text-[8px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 px-2 py-1 rounded-md">
+                  Pendente
+                </div>
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${lanc.type === 'income' ? 'bg-emerald-50' : 'bg-red-50'}`}>
+                  {lanc.icon ? (
+                    <span className="text-xl">{lanc.icon}</span>
+                  ) : (
+                    <FileText className={`w-5 h-5 ${lanc.type === 'income' ? 'text-emerald-500' : 'text-red-500'}`} />
+                  )}
+                </div>
+                <div>
+                  <p className="text-[11px] font-medium text-muted-foreground mb-1 truncate">{lanc.description}</p>
+                  <p className="text-lg font-black text-foreground">{formatCurrency(lanc.amount)}</p>
+                </div>
               </div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-muted-foreground/30" />
-          </motion.div>
-        </div>
+            ))}
+            
+            {/* Adicionar Conta/Lancamento */}
+            <Link href="/lancamentos">
+              <div className="min-w-[130px] bg-secondary/50 hover:bg-secondary border border-dashed border-border/60 rounded-[28px] p-4 flex flex-col items-center justify-center aspect-square shrink-0 transition-colors cursor-pointer">
+                <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center mb-2 shadow-sm">
+                  <Plus className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <p className="text-[10px] font-bold text-muted-foreground text-center">Novo<br/>Lançamento</p>
+              </div>
+            </Link>
+          </div>
+        </motion.div>
 
         {/* Apple Style Quick Stats */}
         <motion.div {...fadeInUp} transition={{ delay: 0.2 }}>
