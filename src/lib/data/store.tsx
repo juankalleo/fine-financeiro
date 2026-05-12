@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef, useState } from 'react';
-import { AppData, Subscription, Bill, Record, Reserve, Notification, Lancamento } from './types';
+import { AppData, Subscription, Bill, Record, Reserve, Notification, Lancamento, Category } from './types';
 import { initialData } from './initial-data';
 import { toast } from 'sonner';
 
