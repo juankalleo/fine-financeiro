@@ -397,7 +397,7 @@ function reducer(state: AppData, action: Action): AppData {
       break;
 
     case 'RESET_DATA':
-      newState = { ...initialData, userName: state.userName };
+      newState = { ...initialData, userName: state.userName, _isReset: true };
       break;
 
     case 'ADD_CATEGORY':

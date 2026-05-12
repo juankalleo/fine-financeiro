@@ -114,6 +114,7 @@ export interface AppData {
   lastProcessedDate: string;
   userName: string;
   updatedAt?: string;
+  _isReset?: boolean;
 }
 
 export type RecordType = Record['type'];

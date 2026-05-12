@@ -18,7 +18,8 @@ export async function GET(req: Request) {
     const hasMeaningfulData = (val: any) =>
       val &&
       typeof val === 'object' &&
-      ((val.records?.length > 0) ||
+      (val._isReset ||
+       (val.records?.length > 0) ||
        (val.subscriptions?.length > 0) ||
        (val.bills?.length > 0) ||
        (val.wallet?.currentBalance > 0) ||
