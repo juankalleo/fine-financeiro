@@ -6,8 +6,8 @@
   --font-sans: var(--font-inter);
   --font-mono: var(--font-roboto-mono);
 
-  --color-apple-blue: #007AFF;
-  --color-apple-blue-dark: #0056B3;
+  --color-apple-blue: var(--apple-blue);
+  --color-apple-blue-dark: var(--apple-blue-dark);
   --color-apple-gray: #8E8E93;
   --color-apple-gray-light: #F2F2F7;
   --color-apple-orange: #FF9500;
@@ -55,14 +55,16 @@
   --input: 240 5.9% 90%;
   --ring: 240 10% 3.9%;
   --radius: 0.5rem;
-  --app-frame: #007AFF;
-  --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Default Blue Theme */
+  --apple-blue: #007AFF;
+  --apple-blue-dark: #0056B3;
+  --app-frame: #007AFF;
 }
 
 .dark {
   --background: 240 10% 3.9%;
-  --app-frame: #007AFF;
   --foreground: 0 0% 98%;
   --card: 240 10% 6%;
   --card-foreground: 0 0% 98%;
@@ -83,6 +85,19 @@
   --ring: 240 4.9% 83.9%;
 }
 
+[data-theme-color="pink"] {
+  --apple-blue: #FFC0CB !important; /* Princess Pink */
+  --apple-blue-dark: #FF9EAF !important;
+  --app-frame: #FFC0CB !important;
+  --color-apple-blue: #FFC0CB !important;
+}
+
+[data-theme-color="pink"] .bg-apple-blue h2, 
+[data-theme-color="pink"] .bg-apple-blue p,
+[data-theme-color="pink"] .bg-apple-blue span {
+  color: #5D2E36 !important;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -94,7 +109,7 @@
 }
 
 .gradient-blue {
-  @apply bg-gradient-to-br from-apple-blue to-[#0056B3];
+  background: linear-gradient(135deg, var(--apple-blue), var(--apple-blue-dark));
 }
 
 .card-shine {
@@ -111,11 +126,19 @@
 }
 
 .bg-app-frame {
-  background-color: var(--app-frame);
+  background-color: var(--app-frame) !important;
 }
 
 .text-app-frame {
-  color: var(--app-frame);
+  color: var(--app-frame) !important;
+}
+
+.bg-apple-blue {
+  background-color: var(--apple-blue) !important;
+}
+
+.text-apple-blue {
+  color: var(--apple-blue) !important;
 }
 
 .pt-safe {

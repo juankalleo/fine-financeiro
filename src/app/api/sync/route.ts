@@ -4,11 +4,48 @@ import { NextResponse } from 'next/server';
 const SYNC_COLLECTION = 'sync_data';
 const SYNC_KEY = 'user_finance_data';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const userId = req.headers.get('x-user-id') || 'default';
     const client = await clientPromise;
     const db = client.db('fine_app');
-    const data = await db.collection(SYNC_COLLECTION).findOne({ key: SYNC_KEY });
+    const col = db.collection(SYNC_COLLECTION);
+
+    // Try v3 key first
+    let data = await col.findOne({ key: `v3_user_data_${userId}` });
+    
+    // Check if data has meaningful content (not just a fresh/zeroed record)
+    const hasMeaningfulData = (val: any) =>
+      val &&
+      typeof val === 'object' &&
+      ((val.records?.length > 0) ||
+       (val.subscriptions?.length > 0) ||
+       (val.bills?.length > 0) ||
+       (val.wallet?.currentBalance > 0) ||
+       (val.wallet?.currentIncome > 0));
+
+    // If no meaningful v3 data, try to migrate from old keys (check many variants)
+    if (!hasMeaningfulData(data?.value)) {
+      const oldKeys = [
+        `user_data_${userId}`,
+        `user_data_kalleo`,   // legacy: was saved with display name
+        `user_data_admin`,    // legacy: login username
+        SYNC_KEY,             // original global key before user isolation
+      ];
+      for (const oldKey of oldKeys) {
+        const oldData = await col.findOne({ key: oldKey });
+        if (oldData?.value && Object.keys(oldData.value).length > 0) {
+          console.log(`[Sync] Migrating cloud data from ${oldKey} to v3_user_data_${userId}`);
+          await col.updateOne(
+            { key: `v3_user_data_${userId}` },
+            { $set: { value: oldData.value, updatedAt: new Date() } },
+            { upsert: true }
+          );
+          data = oldData;
+          break;
+        }
+      }
+    }
     
     return NextResponse.json(data?.value || {});
   } catch (error) {
@@ -19,12 +56,13 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const userId = req.headers.get('x-user-id') || 'default';
     const body = await req.json();
     const client = await clientPromise;
     const db = client.db('fine_app');
     
     await db.collection(SYNC_COLLECTION).updateOne(
-      { key: SYNC_KEY },
+      { key: `v3_user_data_${userId}` },
       { $set: { value: body, updatedAt: new Date() } },
       { upsert: true }
     );

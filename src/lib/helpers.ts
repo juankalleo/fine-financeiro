@@ -5,6 +5,15 @@ export function formatCurrency(value: number): string {
   }).format(value);
 }
 
+export function maskCurrency(value: string): string {
+  let v = value.replace(/\D/g, '');
+  if (!v) return '';
+  const numberValue = (Number(v) / 100).toFixed(2);
+  const parts = numberValue.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return parts.join(',');
+}
+
 export function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
   return new Intl.DateTimeFormat('pt-BR', {

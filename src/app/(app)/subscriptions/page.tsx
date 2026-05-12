@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppData } from '@/lib/data/store';
-import { formatCurrency, getDaysUntilBilling, formatDate } from '@/lib/helpers';
+import { formatCurrency, getDaysUntilBilling, formatDate, maskCurrency } from '@/lib/helpers';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import {
@@ -57,6 +57,9 @@ export default function SubscriptionsPage() {
   const [amount, setAmount] = useState('');
   const [billingDay, setBillingDay] = useState('1');
   const [icon, setIcon] = useState('💳');
+  const [isCredit, setIsCredit] = useState(false);
+  const [totalAmount, setTotalAmount] = useState('');
+  const [installmentValue, setInstallmentValue] = useState('');
 
   const resetLocalForm = () => {
     setName('');
@@ -64,6 +67,9 @@ export default function SubscriptionsPage() {
     setBillingDay('1');
     setIcon('💳');
     setIsAdding(false);
+    setIsCredit(false);
+    setTotalAmount('');
+    setInstallmentValue('');
   };
 
   const handleAddSubmit = (e: React.FormEvent) => {
@@ -83,6 +89,9 @@ export default function SubscriptionsPage() {
         billingDay: parsedDay,
         icon,
         active: true,
+        isCredit,
+        totalAmount: isCredit ? parseFloat(totalAmount.replace(',', '.')) : undefined,
+        installmentValue: isCredit ? parseFloat(installmentValue.replace(',', '.')) : undefined,
       },
     });
     toast.success('Assinatura adicionada');
@@ -100,7 +109,7 @@ export default function SubscriptionsPage() {
         }}
         className="-mx-6 -mt-8 overflow-hidden"
       >
-        <div className="relative bg-gradient-to-br from-apple-blue to-sky-600 rounded-b-[40px] px-6 pb-10 pt-safe-plus-40 text-white shadow-2xl shadow-apple-blue/20 transition-all duration-500">
+        <div className="relative bg-gradient-to-br from-apple-blue to-sky-600 rounded-b-[40px] px-6 pb-10 pt-safe-plus-40 text-white shadow-2xl shadow-apple-blue/20">
           {/* Decorative Elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
 
@@ -163,7 +172,7 @@ export default function SubscriptionsPage() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                   onSubmit={handleAddSubmit}
                   className="overflow-hidden mt-8 space-y-6"
                 >
@@ -187,13 +196,13 @@ export default function SubscriptionsPage() {
                         />
                       </div>
                     </div>
-
+                    
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <Label className="text-[10px] font-black uppercase tracking-widest opacity-70 ml-1 text-white">Valor (R$)</Label>
                         <Input
                           value={amount}
-                          onChange={(e) => setAmount(e.target.value)}
+                          onChange={(e) => setAmount(maskCurrency(e.target.value))}
                           className="h-14 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/40 font-bold focus:ring-white/30"
                           placeholder="0,00"
                           inputMode="decimal"
@@ -209,6 +218,45 @@ export default function SubscriptionsPage() {
                           type="number"
                         />
                       </div>
+                    </div>
+
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-2xl">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-white/70">Assinatura no Crédito</Label>
+                        <input
+                          type="checkbox"
+                          checked={isCredit}
+                          onChange={(e) => setIsCredit(e.target.checked)}
+                          className="w-5 h-5 rounded-lg bg-white/10 border-white/20 text-apple-blue focus:ring-apple-blue/30"
+                        />
+                      </div>
+
+                      {isCredit && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="grid grid-cols-2 gap-4"
+                        >
+                          <div className="space-y-1.5">
+                            <Label className="text-[10px] font-black uppercase tracking-widest opacity-70 ml-1 text-white">Valor Total</Label>
+                            <Input
+                              value={totalAmount}
+                              onChange={(e) => setTotalAmount(maskCurrency(e.target.value))}
+                              className="h-14 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/40 font-bold focus:ring-white/30"
+                              placeholder="0,00"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-[10px] font-black uppercase tracking-widest opacity-70 ml-1 text-white">Valor da Parcela</Label>
+                            <Input
+                              value={installmentValue}
+                              onChange={(e) => setInstallmentValue(maskCurrency(e.target.value))}
+                              className="h-14 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/40 font-bold focus:ring-white/30"
+                              placeholder="0,00"
+                            />
+                          </div>
+                        </motion.div>
+                      )}
                     </div>
                   </div>
 
@@ -385,6 +433,10 @@ function SubscriptionFormDialog({
   const [billingDay, setBillingDay] = useState('1');
   const [icon, setIcon] = useState('💳');
   const [active, setActive] = useState(true);
+  const [isCredit, setIsCredit] = useState(false);
+  const [totalAmount, setTotalAmount] = useState('');
+  const [installmentValue, setInstallmentValue] = useState('');
+  const [categoryId, setCategoryId] = useState('');
 
   // Reset form when editing changes
   const resetForm = () => {
@@ -394,12 +446,20 @@ function SubscriptionFormDialog({
       setBillingDay(editing.billingDay.toString());
       setIcon(editing.icon || '💳');
       setActive(editing.active);
+      setIsCredit(editing.isCredit || false);
+      setTotalAmount(editing.totalAmount?.toString() || '');
+      setInstallmentValue(editing.installmentValue?.toString() || '');
+      setCategoryId(editing.categoryId || '');
     } else {
       setName('');
       setAmount('');
       setBillingDay('1');
       setIcon('💳');
       setActive(true);
+      setIsCredit(false);
+      setTotalAmount('');
+      setInstallmentValue('');
+      setCategoryId('');
     }
   };
 
@@ -413,7 +473,7 @@ function SubscriptionFormDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const parsedAmount = parseFloat(amount.replace(',', '.'));
+    const parsedAmount = parseFloat(amount.replace(/\./g, '').replace(',', '.'));
     const parsedDay = parseInt(billingDay);
 
     if (!name.trim()) {
@@ -439,6 +499,10 @@ function SubscriptionFormDialog({
           billingDay: parsedDay,
           icon,
           active,
+          isCredit,
+          totalAmount: isCredit ? parseFloat(totalAmount.replace(/\./g, '').replace(',', '.')) : undefined,
+          installmentValue: isCredit ? parseFloat(installmentValue.replace(/\./g, '').replace(',', '.')) : undefined,
+          categoryId: categoryId || undefined,
         },
       });
       toast.success('Assinatura atualizada');
@@ -451,6 +515,10 @@ function SubscriptionFormDialog({
           billingDay: parsedDay,
           icon,
           active: true,
+          isCredit,
+          totalAmount: isCredit ? parseFloat(totalAmount.replace(/\./g, '').replace(',', '.')) : undefined,
+          installmentValue: isCredit ? parseFloat(installmentValue.replace(/\./g, '').replace(',', '.')) : undefined,
+          categoryId: categoryId || undefined,
         },
       });
       toast.success('Assinatura adicionada');
@@ -513,7 +581,7 @@ function SubscriptionFormDialog({
                 type="text"
                 inputMode="decimal"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => setAmount(maskCurrency(e.target.value))}
                 placeholder="0,00"
                 className="h-12 rounded-xl bg-secondary/50 border-0 focus-visible:ring-2 focus-visible:ring-apple-blue/30"
               />
@@ -532,6 +600,40 @@ function SubscriptionFormDialog({
                 className="h-12 rounded-xl bg-secondary/50 border-0 focus-visible:ring-2 focus-visible:ring-apple-blue/30"
               />
             </div>
+          </div>
+          <div className="space-y-4 pt-2 border-t border-border/40">
+            <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
+              <Label className="text-sm font-medium">Assinatura no Crédito</Label>
+              <input
+                type="checkbox"
+                checked={isCredit}
+                onChange={(e) => setIsCredit(e.target.checked)}
+                className="w-5 h-5 rounded-lg border-border/40 text-apple-blue focus:ring-apple-blue/30"
+              />
+            </div>
+
+            {isCredit && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase ml-1">Valor Total</Label>
+                  <Input
+                    value={totalAmount}
+                    onChange={(e) => setTotalAmount(maskCurrency(e.target.value))}
+                    className="h-11 rounded-xl bg-secondary/50 border-0 focus-visible:ring-2 focus-visible:ring-apple-blue/30"
+                    placeholder="0,00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase ml-1">Parcela</Label>
+                  <Input
+                    value={installmentValue}
+                    onChange={(e) => setInstallmentValue(maskCurrency(e.target.value))}
+                    className="h-11 rounded-xl bg-secondary/50 border-0 focus-visible:ring-2 focus-visible:ring-apple-blue/30"
+                    placeholder="0,00"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-3 pt-2">

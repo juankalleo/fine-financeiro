@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { maskCurrency } from '@/lib/helpers';
 
 interface LancamentoDialogProps {
   open: boolean;
@@ -30,10 +31,16 @@ export function LancamentoDialog({
   const [scheduledDate, setScheduledDate] = useState(new Date().toISOString().split('T')[0]);
   const [updateNow, setUpdateNow] = useState(true);
   const [icon, setIcon] = useState('💰');
+  const [showOnHome, setShowOnHome] = useState(false);
+  const [isCredit, setIsCredit] = useState(false);
+  const [totalAmount, setTotalAmount] = useState('');
+  const [installmentValue, setInstallmentValue] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const { data } = useAppData();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const value = parseFloat(amount.replace(',', '.'));
+    const value = parseFloat(amount.replace(/\./g, '').replace(',', '.'));
     if (isNaN(value) || value <= 0) {
       toast.error('Valor inválido');
       return;
@@ -52,6 +59,9 @@ export function LancamentoDialog({
         scheduledDate: updateNow ? new Date().toISOString() : new Date(scheduledDate).toISOString(),
         executed: updateNow,
         icon,
+        showOnHome,
+        installmentValue: isCredit ? parseFloat(installmentValue.replace(/\./g, '').replace(',', '.')) : undefined,
+        categoryId: categoryId || undefined,
       },
     });
 
@@ -61,6 +71,10 @@ export function LancamentoDialog({
     setType('expense');
     setUpdateNow(true);
     setScheduledDate(new Date().toISOString().split('T')[0]);
+    setShowOnHome(false);
+    setIsCredit(false);
+    setTotalAmount('');
+    setInstallmentValue('');
     onOpenChange(false);
   };
 
@@ -150,9 +164,69 @@ export function LancamentoDialog({
               inputMode="decimal"
               placeholder="0,00"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => setAmount(maskCurrency(e.target.value))}
               className="h-12 rounded-xl bg-secondary/50 border-0 text-lg font-semibold focus-visible:ring-2 focus-visible:ring-apple-blue/30"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category" className="text-sm font-medium">Categoria</Label>
+            <select
+              id="category"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="w-full h-12 px-4 rounded-xl bg-secondary/50 border-0 focus:ring-2 focus:ring-apple-blue/30 text-sm appearance-none"
+            >
+              <option value="">Selecione uma categoria</option>
+              {data.categories?.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-4 pt-2 border-t border-border/40">
+            <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
+              <Label className="text-sm font-medium">Exibir na tela inicial</Label>
+              <input
+                type="checkbox"
+                checked={showOnHome}
+                onChange={(e) => setShowOnHome(e.target.checked)}
+                className="w-5 h-5 rounded-lg border-border/40 text-apple-blue focus:ring-apple-blue/30"
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
+              <Label className="text-sm font-medium">Compra no Crédito</Label>
+              <input
+                type="checkbox"
+                checked={isCredit}
+                onChange={(e) => setIsCredit(e.target.checked)}
+                className="w-5 h-5 rounded-lg border-border/40 text-apple-blue focus:ring-apple-blue/30"
+              />
+            </div>
+
+            {isCredit && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase ml-1">Valor Total</Label>
+                  <Input
+                    value={totalAmount}
+                    onChange={(e) => setTotalAmount(maskCurrency(e.target.value))}
+                    className="h-11 rounded-xl bg-secondary/50 border-0 focus-visible:ring-2 focus-visible:ring-apple-blue/30"
+                    placeholder="0,00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase ml-1">Parcela</Label>
+                  <Input
+                    value={installmentValue}
+                    onChange={(e) => setInstallmentValue(maskCurrency(e.target.value))}
+                    className="h-11 rounded-xl bg-secondary/50 border-0 focus-visible:ring-2 focus-visible:ring-apple-blue/30"
+                    placeholder="0,00"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2 pt-2 border-t border-border/40">

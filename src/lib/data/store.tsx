@@ -5,16 +5,72 @@ import { AppData, Subscription, Bill, Record, Reserve, Notification, Lancamento 
 import { initialData } from './initial-data';
 import { toast } from 'sonner';
 
-const STORAGE_KEY = 'fine_data_v2';
+function getStorageKey(username: string): string {
+  return `fine_data_v3_${username}`;
+}
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
-function loadLocalData(): AppData {
+function migrateOldData(username: string): void {
+  if (typeof window === 'undefined') return;
+  const v3Key = getStorageKey(username);
+  // Only migrate if v3 is empty
+  if (localStorage.getItem(v3Key)) return;
+
+  // Try specific old keys first
+  const oldKeys = [
+    `fine_data_v2_${username}`,
+    `fine_data_v1_${username}`,
+    `fine_data_${username}`,
+    `fine_data_v2_admin`, // in case username was changed
+    `fine_data_v1_admin`,
+    `fine_data_admin`,
+    `financeapp_data`,
+    `finance_data`,
+  ];
+
+  for (const oldKey of oldKeys) {
+    const old = localStorage.getItem(oldKey);
+    if (old) {
+      try {
+        const parsed = JSON.parse(old);
+        // Ensure it has actual financial data (not just empty object)
+        if (parsed && (parsed.wallet || parsed.records || parsed.subscriptions)) {
+          console.log(`[Store] Migrating data from ${oldKey} to ${v3Key}`);
+          localStorage.setItem(v3Key, old);
+          return;
+        }
+      } catch {}
+    }
+  }
+
+  // Last resort: scan ALL localStorage keys for any fine_data entry
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('fine_data') && key !== v3Key) {
+      const old = localStorage.getItem(key);
+      if (old) {
+        try {
+          const parsed = JSON.parse(old);
+          if (parsed && (parsed.wallet || parsed.records || parsed.subscriptions)) {
+            console.log(`[Store] Migrating data from scanned key ${key} to ${v3Key}`);
+            localStorage.setItem(v3Key, old);
+            return;
+          }
+        } catch {}
+      }
+    }
+  }
+}
+
+function loadLocalData(username: string): AppData {
   if (typeof window === 'undefined') return initialData;
+  // Run migration first to recover any old data
+  migrateOldData(username);
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(getStorageKey(username));
     if (stored) {
       const parsed = JSON.parse(stored);
       return { ...initialData, ...parsed };
@@ -23,18 +79,21 @@ function loadLocalData(): AppData {
   return initialData;
 }
 
-function saveLocalData(data: AppData): void {
+function saveLocalData(data: AppData, username: string): void {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(getStorageKey(username), JSON.stringify(data));
   } catch { }
 }
 
-async function syncToKV(data: AppData) {
+async function syncToKV(data: AppData, username: string) {
   try {
     await fetch('/api/sync', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-user-id': username 
+      },
       body: JSON.stringify(data),
     });
   } catch (error) {
@@ -42,9 +101,11 @@ async function syncToKV(data: AppData) {
   }
 }
 
-async function loadFromKV(): Promise<AppData | null> {
+async function loadFromKV(username: string): Promise<AppData | null> {
   try {
-    const res = await fetch('/api/sync');
+    const res = await fetch('/api/sync', {
+      headers: { 'x-user-id': username }
+    });
     if (!res.ok) return null;
     const data = await res.json();
     if (data && (data.wallet || data.records)) return { ...initialData, ...data } as AppData;
@@ -75,10 +136,29 @@ type Action =
   | { type: 'UPDATE_LANCAMENTO'; payload: Lancamento }
   | { type: 'REMOVE_LANCAMENTO'; payload: string }
   | { type: 'EXECUTE_LANCAMENTO'; payload: string }
-  | { type: 'REVERT_LANCAMENTO'; payload: string };
+  | { type: 'REVERT_LANCAMENTO'; payload: string }
+  | { type: 'ADD_CATEGORY'; payload: Omit<Category, 'id'> }
+  | { type: 'REMOVE_CATEGORY'; payload: string }
+  | { type: 'UPDATE_CATEGORY'; payload: Category };
 
-function createRecord(type: Record['type'], description: string, amount: number, prev: number, next: number): Record {
-  return { id: generateId(), date: new Date().toISOString(), type, description, amount, previousBalance: prev, newBalance: next };
+function createRecord(
+  type: Record['type'],
+  description: string,
+  amount: number,
+  prev: number,
+  next: number,
+  creditInfo?: { isCredit?: boolean; totalAmount?: number; installmentValue?: number; categoryId?: string }
+): Record {
+  return {
+    id: generateId(),
+    date: new Date().toISOString(),
+    type,
+    description,
+    amount,
+    previousBalance: prev,
+    newBalance: next,
+    ...creditInfo
+  };
 }
 
 function reducer(state: AppData, action: Action): AppData {
@@ -146,7 +226,17 @@ function reducer(state: AppData, action: Action): AppData {
         ...state,
         wallet: { ...state.wallet, currentBalance: nextBal },
         bills: state.bills.map(b => b.id === action.payload ? { ...b, paid: true } : b),
-        records: [createRecord('bill_payment', `Pago: ${bill.name}`, -bill.amount, state.wallet.currentBalance, nextBal), ...state.records],
+        records: [
+          createRecord(
+            'bill_payment',
+            `Pago: ${bill.name}`,
+            -bill.amount,
+            state.wallet.currentBalance,
+            nextBal,
+            { isCredit: bill.isCredit, totalAmount: bill.totalAmount, installmentValue: bill.installmentValue, categoryId: bill.categoryId }
+          ),
+          ...state.records
+        ],
       };
       break;
     }
@@ -186,21 +276,40 @@ function reducer(state: AppData, action: Action): AppData {
       let updatedState = { ...state, lancamentos: [...(state.lancamentos || []), newLanc] };
       
       if (newLanc.executed) {
-        // If it's already executed upon creation (e.g. "atualizar agora"), update balance immediately
         const effect = newLanc.type === 'income' ? newLanc.amount : -newLanc.amount;
         const nextBal = state.wallet.currentBalance + effect;
-        updatedState = {
+        newState = {
           ...updatedState,
           wallet: { ...updatedState.wallet, currentBalance: nextBal },
-          records: [createRecord('lancamento_executed', `Lançamento: ${newLanc.description}`, effect, state.wallet.currentBalance, nextBal), ...state.records],
+          records: [
+            createRecord(
+              'lancamento_executed',
+              `Lançamento: ${newLanc.description}`,
+              effect,
+              state.wallet.currentBalance,
+              nextBal,
+              { isCredit: newLanc.isCredit, totalAmount: newLanc.totalAmount, installmentValue: newLanc.installmentValue, categoryId: newLanc.categoryId }
+            ),
+            ...state.records
+          ],
         };
       } else {
-        updatedState = {
-          ...updatedState,
-          records: [createRecord('lancamento_added', `Agendado: ${newLanc.description}`, 0, state.wallet.currentBalance, state.wallet.currentBalance), ...state.records],
+        newState = {
+          ...state,
+          lancamentos: [...(state.lancamentos || []), newLanc],
+          records: [
+            createRecord(
+              'lancamento_added',
+              `Agendado: ${newLanc.description}`,
+              0,
+              state.wallet.currentBalance,
+              state.wallet.currentBalance,
+              { isCredit: newLanc.isCredit, totalAmount: newLanc.totalAmount, installmentValue: newLanc.installmentValue, categoryId: newLanc.categoryId }
+            ),
+            ...state.records
+          ],
         };
       }
-      newState = updatedState;
       break;
     }
 
@@ -237,7 +346,17 @@ function reducer(state: AppData, action: Action): AppData {
         ...state,
         wallet: { ...state.wallet, currentBalance: nextBal },
         lancamentos: (state.lancamentos || []).map(l => l.id === action.payload ? { ...l, executed: true } : l),
-        records: [createRecord('lancamento_executed', `Lançamento: ${lanc.description}`, effect, state.wallet.currentBalance, nextBal), ...state.records],
+        records: [
+          createRecord(
+            'lancamento_executed',
+            `Lançamento: ${lanc.description}`,
+            effect,
+            state.wallet.currentBalance,
+            nextBal,
+            { isCredit: lanc.isCredit, totalAmount: lanc.totalAmount, installmentValue: lanc.installmentValue, categoryId: lanc.categoryId }
+          ),
+          ...state.records
+        ],
       };
       break;
     }
@@ -251,7 +370,17 @@ function reducer(state: AppData, action: Action): AppData {
         ...state,
         wallet: { ...state.wallet, currentBalance: nextBal },
         lancamentos: (state.lancamentos || []).map(l => l.id === action.payload ? { ...l, executed: false } : l),
-        records: [createRecord('lancamento_reverted', `Revertido: ${lanc.description}`, effect, state.wallet.currentBalance, nextBal), ...state.records],
+        records: [
+          createRecord(
+            'lancamento_reverted',
+            `Revertido: ${lanc.description}`,
+            effect,
+            state.wallet.currentBalance,
+            nextBal,
+            { isCredit: lanc.isCredit, totalAmount: lanc.totalAmount, installmentValue: lanc.installmentValue, categoryId: lanc.categoryId }
+          ),
+          ...state.records
+        ],
       };
       break;
     }
@@ -259,7 +388,6 @@ function reducer(state: AppData, action: Action): AppData {
     case 'PROCESS_AUTO_CHARGES': {
       const today = new Date().toISOString().split('T')[0];
       if (state.lastProcessedDate === today) return state;
-      // Simplified auto process logic for speed
       newState = { ...state, lastProcessedDate: today };
       break;
     }
@@ -272,12 +400,33 @@ function reducer(state: AppData, action: Action): AppData {
       newState = initialData;
       break;
 
+    case 'ADD_CATEGORY':
+      newState = {
+        ...state,
+        categories: [...(state.categories || []), { ...action.payload, id: generateId() }],
+      };
+      break;
+
+    case 'REMOVE_CATEGORY':
+      newState = {
+        ...state,
+        categories: (state.categories || []).filter(c => c.id !== action.payload),
+      };
+      break;
+
+    case 'UPDATE_CATEGORY':
+      newState = {
+        ...state,
+        categories: (state.categories || []).map(c => c.id === action.payload.id ? action.payload : c),
+      };
+      break;
+
     default:
       return state;
   }
 
-  saveLocalData(newState);
-  syncToKV(newState);
+  saveLocalData(newState, state.userName || 'default');
+  syncToKV(newState, state.userName || 'default');
   return newState;
 }
 
@@ -292,33 +441,44 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | null>(null);
 
-export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [data, dispatch] = useReducer(reducer, initialData);
+export function AppProvider({ children, username = 'admin' }: { children: React.ReactNode, username?: string }) {
+  const [data, dispatch] = useReducer(reducer, { ...initialData, userName: username });
   const [isSyncing, setIsSyncing] = useState(true);
 
   const refreshFromCloud = useCallback(async () => {
     setIsSyncing(true);
-    const kv = await loadFromKV();
+    const kv = await loadFromKV(username);
     if (kv) {
-      dispatch({ type: 'SET_DATA', payload: kv });
-      saveLocalData(kv);
+      dispatch({ type: 'SET_DATA', payload: { ...kv, userName: username } });
+      saveLocalData(kv, username);
     }
     setIsSyncing(false);
-  }, []);
+  }, [username]);
 
   useEffect(() => {
     async function init() {
-      const kv = await loadFromKV();
-      if (kv) {
-        dispatch({ type: 'SET_DATA', payload: { ...initialData, ...kv } });
-        saveLocalData({ ...initialData, ...kv });
-      } else {
-        dispatch({ type: 'SET_DATA', payload: loadLocalData() });
+      setIsSyncing(true);
+      console.log(`[Fine] Initializing session for user: ${username}`);
+      
+      const kv = await loadFromKV(username);
+      let dataToSet: AppData | null = null;
+
+      if (kv && Object.keys(kv).length > 0) {
+        dataToSet = { ...initialData, ...kv, userName: kv.userName || username };
       }
+
+      if (!dataToSet) {
+        const local = loadLocalData(username);
+        dataToSet = { ...local, userName: local.userName || username };
+      }
+
+      console.log(`[Fine] Session ready for ${username}. Current balance: ${dataToSet.wallet.currentBalance}`);
+      dispatch({ type: 'SET_DATA', payload: dataToSet });
+      saveLocalData(dataToSet, username);
       setIsSyncing(false);
     }
     init();
-  }, []);
+  }, [username]);
 
   return (
     <AppContext.Provider value={{ data, dispatch, isSyncing, refreshFromCloud, exportData: () => JSON.stringify(data), importData: () => false }}>

@@ -59,8 +59,9 @@ export function TopBar() {
 
   return (
     <header
-      className={`fixed top-0 right-0 h-14 bg-app-frame z-30 lg:flex hidden items-center justify-between px-10 transition-all duration-300 ${isSidebarCollapsed ? 'left-14' : 'left-64'
+      className={`fixed top-0 right-0 h-14 z-30 lg:flex hidden items-center justify-between px-10 transition-all duration-300 ${isSidebarCollapsed ? 'left-14' : 'left-64'
         }`}
+      style={{ backgroundColor: 'var(--app-frame)' }}
     >
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-white/50 uppercase">
@@ -138,8 +139,9 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`fixed top-0 left-0 bottom-0 bg-app-frame z-40 transition-all duration-300 ease-in-out lg:flex hidden flex-col ${isSidebarCollapsed ? 'w-14' : 'w-64'
+      className={`fixed top-0 left-0 bottom-0 z-40 transition-all duration-300 ease-in-out lg:flex hidden flex-col ${isSidebarCollapsed ? 'w-14' : 'w-64'
         }`}
+      style={{ backgroundColor: 'var(--app-frame)' }}
     >
       <div className="h-20 flex items-center px-4 gap-3 shrink-0">
         {!isSidebarCollapsed ? (
@@ -169,12 +171,13 @@ export function Sidebar() {
                 className="relative block group"
               >
                 <div
-                  className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[16px] font-black tracking-tight transition-all ${isActive
-                    ? 'bg-white/20 text-white shadow-2xl shadow-black/20 scale-[1.03] border border-white/10'
-                    : 'text-white/90 hover:bg-white/10 hover:text-white'
+                  className={`flex items-center rounded-2xl text-[16px] font-black tracking-tight transition-all ${isSidebarCollapsed ? 'justify-center p-2.5' : 'gap-4 px-4 py-3.5'
+                    } ${isActive
+                      ? 'bg-white/20 text-white shadow-2xl shadow-black/20 scale-[1.03] border border-white/10'
+                      : 'text-white/90 hover:bg-white/10 hover:text-white'
                     }`}
                 >
-                  <Icon className="w-6 h-6 shrink-0" />
+                  <Icon className={`${isSidebarCollapsed ? 'w-5 h-5' : 'w-6 h-6'} shrink-0`} />
 
                   {!isSidebarCollapsed && (
                     <motion.span
@@ -200,7 +203,8 @@ export function Sidebar() {
       <div className="mt-auto p-3">
         <button
           onClick={toggleSidebar}
-          className="w-full flex items-center gap-3.5 px-3.5 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white/40 hover:bg-white/10 hover:text-white transition-all"
+          className={`w-full flex items-center rounded-2xl text-[11px] font-black uppercase tracking-widest text-white/40 hover:bg-white/10 hover:text-white transition-all ${isSidebarCollapsed ? 'justify-center p-3.5' : 'gap-3.5 px-3.5 py-3.5'
+            }`}
         >
           <Menu className="w-5 h-5 shrink-0" />
           {!isSidebarCollapsed && <span>Recolher</span>}
@@ -219,7 +223,7 @@ export function BottomNav() {
     navItems[2], // Assinaturas
     navItems[1], // Lançamentos (Middle)
     navItems[3], // Contas
-    navItems[4], // Reservas
+    navItems[5], // Registros
   ];
 
   return (

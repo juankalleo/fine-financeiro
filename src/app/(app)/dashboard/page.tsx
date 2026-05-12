@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useAppData } from '@/lib/data/store';
 import { formatCurrency, formatDate, getDaysUntilBilling } from '@/lib/helpers';
@@ -20,11 +20,20 @@ import {
   ChevronRight,
   Plus,
   FileText,
+  Calendar,
 } from 'lucide-react';
 import { Reserve } from '@/lib/data/types';
 import { BalanceEditDialog } from '@/components/dashboard/balance-edit-dialog';
 import { ReserveTransactionDialog } from '@/components/reserves/reserve-transaction-dialog';
 import { MobileHeaderActions } from '@/components/layout/mobile-header-actions';
+import { CategoryStats } from '@/components/dashboard/category-stats';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -39,6 +48,35 @@ export default function DashboardPage() {
   const [showBalanceEdit, setShowBalanceEdit] = useState(false);
   const [selectedReserve, setSelectedReserve] = useState<Reserve | null>(null);
 
+  // Filter state
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+
+  const monthOptions = [
+    { value: 0, label: 'Janeiro' },
+    { value: 1, label: 'Fevereiro' },
+    { value: 2, label: 'Março' },
+    { value: 3, label: 'Abril' },
+    { value: 4, label: 'Maio' },
+    { value: 5, label: 'Junho' },
+    { value: 6, label: 'Julho' },
+    { value: 7, label: 'Agosto' },
+    { value: 8, label: 'Setembro' },
+    { value: 9, label: 'Outubro' },
+    { value: 10, label: 'Novembro' },
+    { value: 11, label: 'Dezembro' },
+  ];
+
+  const yearOptions = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const years: number[] = [];
+    for (let y = currentYear - 5; y <= currentYear + 1; y++) {
+      years.push(y);
+    }
+    return years;
+  }, []);
+
   const activeSubscriptions = data.subscriptions.filter((s) => s.active);
   const totalSubscriptions = activeSubscriptions.reduce((acc, s) => acc + s.amount, 0);
   const pendingBills = data.bills.filter((b) => !b.paid);
@@ -50,7 +88,12 @@ export default function DashboardPage() {
     .map((s) => ({ ...s, daysUntil: getDaysUntilBilling(s.billingDay) }))
     .sort((a, b) => a.daysUntil - b.daysUntil)[0];
 
-  const recentRecords = data.records.slice(0, 5);
+  const filteredRecords = data.records.filter(r => {
+    const d = new Date(r.date);
+    return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
+  });
+
+  const recentRecords = filteredRecords.slice(0, 5);
   const recentNotifs = data.notifications.slice(0, 3);
 
   return (
@@ -58,7 +101,7 @@ export default function DashboardPage() {
       <div className="space-y-6">
         {/* Main Balance Card - New Blue Mobile Design - Edge to Edge */}
         <motion.div {...fadeInUp} className="-mx-6 -mt-0 lg:mt-0">
-          <div className="relative overflow-hidden rounded-b-[40px] lg:rounded-[40px] bg-apple-blue px-6 py-8 lg:p-12 text-white shadow-2xl shadow-apple-blue/30 pt-safe-plus-10 lg:pt-12">
+          <div className="relative overflow-hidden rounded-b-[40px] lg:rounded-[40px] px-6 py-8 lg:p-12 text-white shadow-2xl pt-safe-plus-10 lg:pt-12" style={{ backgroundColor: 'var(--apple-blue)' }}>
             <div className="relative z-10">
               {/* Mobile Top Header (Inside Card) */}
               <div className="flex items-center justify-between mb-6 lg:hidden">
@@ -85,9 +128,33 @@ export default function DashboardPage() {
                 <h2 className="text-5xl lg:text-7xl font-black tracking-tighter">
                   {formatCurrency(data.wallet.currentBalance)}
                 </h2>
-                <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10">
-                  <TrendingUp className="w-3 h-3 text-emerald-300" />
-                  <span className="text-[10px] font-bold text-white/90">+{formatCurrency(data.wallet.currentIncome)} este mês</span>
+                <div className="flex items-center justify-center gap-3 mt-4">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10">
+                    <TrendingUp className="w-3 h-3 text-emerald-300" />
+                    <span className="text-[10px] font-bold text-white/90">+{formatCurrency(data.wallet.currentIncome)} este mês</span>
+                  </div>
+                  
+                  {/* Selectors integrated in the center */}
+                  <div className="hidden lg:flex items-center gap-1.5 px-2 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10">
+                    <Calendar className="w-3 h-3 text-white/60" />
+                    <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                      <SelectTrigger className="h-6 min-w-[100px] bg-transparent border-0 text-white font-bold text-[10px] p-0 focus:ring-0 shadow-none">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {monthOptions.map(m => <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <div className="w-px h-3 bg-white/20 mx-1" />
+                    <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                      <SelectTrigger className="h-6 min-w-[60px] bg-transparent border-0 text-white font-bold text-[10px] p-0 focus:ring-0 shadow-none">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {yearOptions.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
 
@@ -104,6 +171,26 @@ export default function DashboardPage() {
                   <span className="text-[9px] font-black opacity-70 uppercase tracking-widest block mb-0.5">Saldo</span>
                   <p className="text-sm font-black">{formatCurrency(data.wallet.currentBalance)}</p>
                 </div>
+              </div>
+
+              {/* Mobile Selectors (Inside Card) */}
+              <div className="flex lg:hidden items-center justify-center gap-2 mt-4 mb-2">
+                <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                  <SelectTrigger className="h-8 bg-white/10 border-white/10 text-white rounded-lg focus:ring-0 text-[10px] min-w-[90px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {monthOptions.map(m => <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                  <SelectTrigger className="h-8 bg-white/10 border-white/10 text-white rounded-lg focus:ring-0 text-[10px] min-w-[70px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {yearOptions.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -148,7 +235,7 @@ export default function DashboardPage() {
             ))}
 
             {/* Lançamentos Pendentes Cards */}
-            {data.lancamentos?.filter(l => !l.executed).map(lanc => (
+            {data.lancamentos?.filter(l => !l.executed && l.showOnHome).map(lanc => (
               <div key={lanc.id} className="min-w-[130px] bg-white dark:bg-zinc-900 border border-border/40 rounded-[28px] p-4 flex flex-col justify-between aspect-square shrink-0 shadow-sm relative overflow-hidden">
                 <div className="absolute top-3 right-3 text-[8px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 px-2 py-1 rounded-md">
                   Pendente
@@ -202,6 +289,11 @@ export default function DashboardPage() {
               </Link>
             ))}
           </div>
+        </motion.div>
+
+        {/* Category Stats Dashboard */}
+        <motion.div {...fadeInUp} transition={{ delay: 0.22 }}>
+          <CategoryStats month={selectedMonth} year={selectedYear} />
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

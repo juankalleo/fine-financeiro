@@ -146,32 +146,36 @@ export default function RecordsPage() {
           <thead>
             <tr>
               <th>Data</th>
-              <th>Descrição</th>
-              <th>Tipo</th>
-              <th style="text-align: right">Valor</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${filteredRecords.map(record => `
-              <tr>
-                <td>${new Date(record.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
-                <td style="font-weight: 600">${record.description}</td>
-                <td><span class="type-badge">${RECORD_TYPE_LABELS[record.type]}</span></td>
-                <td class="amount ${record.amount >= 0 ? 'positive' : 'negative'}">
-                  ${record.amount >= 0 ? '+' : ''}${formatCurrency(record.amount)}
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
+               <th>Descrição</th>
+               <th>Tipo</th>
+               <th>Categoria</th>
+               <th style="text-align: right">Valor</th>
+             </tr>
+           </thead>
+           <tbody>
+             ${filteredRecords.map(record => {
+               const category = data.categories?.find(c => c.id === record.categoryId);
+               return `
+               <tr>
+                 <td>${new Date(record.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+                 <td>
+                   <div style="font-weight: 600">${record.description}</div>
+                   ${record.isCredit ? `<div style="font-size: 9px; color: #666; margin-top: 2px;">💳 CRÉDITO: ${record.installmentValue ? `${formatCurrency(record.installmentValue)}/parcela` : ''} (Total: ${formatCurrency(record.totalAmount || 0)})</div>` : ''}
+                 </td>
+                 <td><span class="type-badge">${RECORD_TYPE_LABELS[record.type]}</span></td>
+                 <td>${category ? `<span style="font-size: 11px;">${category.icon} ${category.name}</span>` : '<span style="color: #999">—</span>'}</td>
+                 <td class="amount ${record.amount >= 0 ? 'positive' : 'negative'}">
+                   ${record.amount >= 0 ? '+' : ''}${formatCurrency(record.amount)}
+                 </td>
+               </tr>
+             `; }).join('')}
+           </tbody>
         </table>
 
         <div class="footer">
           Documento gerado automaticamente pelo sistema Fine. 
         </div>
-        
-        <script>
-          window.onload = function() { window.print(); }
-        </script>
+        </div>
       </body>
       </html>
     `;
@@ -179,6 +183,12 @@ export default function RecordsPage() {
     printWindow.document.open();
     printWindow.document.write(html);
     printWindow.document.close();
+    
+    // Trigger print directly
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
   };
 
   const filteredRecords = useMemo(() => {
@@ -354,6 +364,11 @@ export default function RecordsPage() {
                       <span className="text-[10px] text-muted-foreground">
                         {formatDateTime(record.date)}
                       </span>
+                      {record.categoryId && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-border/40 bg-secondary/20">
+                          {data.categories?.find(c => c.id === record.categoryId)?.icon} {data.categories?.find(c => c.id === record.categoryId)?.name}
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
                       <span>

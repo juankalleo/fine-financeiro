@@ -12,7 +12,7 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, username, themeColor } = useAuth();
   const router = useRouter();
   const { isSidebarCollapsed } = useUI();
 
@@ -20,7 +20,12 @@ export default function AppLayout({
     if (!isLoading && !isAuthenticated) {
       router.replace('/login');
     }
-  }, [isAuthenticated, isLoading, router]);
+    
+    // Apply theme to document root for global CSS variable override
+    if (themeColor) {
+      document.documentElement.setAttribute('data-theme-color', themeColor);
+    }
+  }, [isAuthenticated, isLoading, router, themeColor]);
 
   if (isLoading || !isAuthenticated) {
     return (
@@ -33,14 +38,30 @@ export default function AppLayout({
   }
 
   return (
-    <AppProvider>
-      <div className="fixed inset-0 bg-background dark:bg-zinc-950 text-foreground transition-all duration-500 overflow-hidden flex flex-col">
+    <AppProvider username={username} key={username}>
+      <div 
+        data-theme-color={themeColor}
+        className="fixed inset-0 bg-background dark:bg-zinc-950 text-foreground transition-all duration-500 overflow-hidden flex flex-col"
+      >
         <Sidebar />
         <div
-          className={`flex-1 transition-all duration-300 flex flex-col min-h-0 lg:bg-app-frame ${isSidebarCollapsed ? 'lg:ml-14' : 'lg:ml-64'
+          className={`flex-1 transition-all duration-300 flex flex-col min-h-0 relative ${isSidebarCollapsed ? 'lg:ml-14' : 'lg:ml-64'
             }`}
+          style={{ backgroundColor: 'var(--app-frame)' }}
         >
           <TopBar />
+
+          {/* Inverted Corners for Premium Frame Look */}
+          <div className={`fixed top-14 transition-all duration-300 z-50 lg:block hidden pointer-events-none ${isSidebarCollapsed ? 'left-14' : 'left-64'}`}>
+            <div className="absolute top-0 left-0 w-10 h-10" style={{ backgroundColor: 'var(--app-frame)' }}>
+              <div className="w-full h-full bg-background dark:bg-zinc-950 rounded-tl-[40px]" />
+            </div>
+          </div>
+          <div className={`fixed bottom-0 transition-all duration-300 z-50 lg:block hidden pointer-events-none ${isSidebarCollapsed ? 'left-14' : 'left-64'}`}>
+            <div className="absolute bottom-0 left-0 w-10 h-10" style={{ backgroundColor: 'var(--app-frame)' }}>
+              <div className="w-full h-full bg-background dark:bg-zinc-950 rounded-bl-[40px]" />
+            </div>
+          </div>
 
           {/* Main Content Frame */}
           <div className="flex-1 lg:mt-14 bg-background dark:bg-zinc-950 lg:rounded-tl-[40px] lg:rounded-bl-[40px] relative overflow-hidden shadow-2xl">

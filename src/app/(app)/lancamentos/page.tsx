@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppData } from '@/lib/data/store';
-import { formatCurrency, formatDate } from '@/lib/helpers';
+import { formatCurrency, formatDate, maskCurrency } from '@/lib/helpers';
 import { Header } from '@/components/layout/header';
 import { LancamentoDialog } from '@/components/lancamentos/lancamento-dialog';
 import { Button } from '@/components/ui/button';
@@ -55,6 +55,11 @@ export default function LancamentosPage() {
   const [scheduledDate, setScheduledDate] = useState(new Date().toISOString().split('T')[0]);
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [icon, setIcon] = useState('💰');
+  const [showOnHome, setShowOnHome] = useState(false);
+  const [isCredit, setIsCredit] = useState(false);
+  const [totalAmount, setTotalAmount] = useState('');
+  const [installmentValue, setInstallmentValue] = useState('');
+  const [categoryId, setCategoryId] = useState('');
 
   const resetLocalForm = () => {
     setDescription('');
@@ -63,11 +68,16 @@ export default function LancamentosPage() {
     setType('expense');
     setIcon('💰');
     setIsAdding(false);
+    setShowOnHome(false);
+    setIsCredit(false);
+    setTotalAmount('');
+    setInstallmentValue('');
+    setCategoryId('');
   };
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const parsedAmount = parseFloat(amount.replace(',', '.'));
+    const parsedAmount = parseFloat(amount.replace(/\./g, '').replace(',', '.'));
 
     if (!description.trim()) return toast.error('Informe a descrição');
     if (isNaN(parsedAmount) || parsedAmount <= 0) return toast.error('Valor inválido');
@@ -81,6 +91,9 @@ export default function LancamentosPage() {
         type,
         icon,
         executed: false,
+        showOnHome,
+        installmentValue: isCredit ? parseFloat(installmentValue.replace(/\./g, '').replace(',', '.')) : undefined,
+        categoryId: categoryId || undefined,
       },
     });
     toast.success('Lançamento agendado');
@@ -92,14 +105,8 @@ export default function LancamentosPage() {
   return (
     <>
       {/* Hero Section - Dynamic & Expandable */}
-      <motion.div
-        initial={false}
-        animate={{
-          marginBottom: isAdding ? '2rem' : '2rem'
-        }}
-        className="-mx-6 -mt-8 overflow-hidden"
-      >
-        <div className="relative overflow-hidden bg-gradient-to-br from-apple-blue to-sky-700 rounded-b-[40px] px-6 pb-10 pt-safe-plus-40 text-white shadow-2xl shadow-apple-blue/20 transition-all duration-500">
+      <div className="-mx-6 -mt-8 overflow-hidden">
+        <div className="relative overflow-hidden bg-gradient-to-br from-apple-blue to-sky-700 rounded-b-[40px] px-6 pb-10 pt-safe-plus-40 text-white shadow-2xl shadow-apple-blue/20">
           {/* Decorative Elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
 
@@ -161,7 +168,7 @@ export default function LancamentosPage() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                   onSubmit={handleAddSubmit}
                   className="overflow-hidden mt-8 space-y-6"
                 >
@@ -191,7 +198,7 @@ export default function LancamentosPage() {
                         <Label className="text-[10px] font-black uppercase tracking-widest opacity-70 ml-1 text-white">Valor (R$)</Label>
                         <Input
                           value={amount}
-                          onChange={(e) => setAmount(e.target.value)}
+                          onChange={(e) => setAmount(maskCurrency(e.target.value))}
                           className="h-14 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/40 font-bold focus:ring-white/30"
                           placeholder="0,00"
                         />
@@ -205,6 +212,20 @@ export default function LancamentosPage() {
                           type="date"
                         />
                       </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-black uppercase tracking-widest opacity-70 ml-1 text-white">Categoria</Label>
+                      <select
+                        value={categoryId}
+                        onChange={(e) => setCategoryId(e.target.value)}
+                        className="w-full h-14 px-4 rounded-2xl bg-white/10 border-white/20 text-white font-bold focus:ring-white/30 text-sm appearance-none"
+                      >
+                        <option value="" className="text-black">Selecione uma categoria</option>
+                        {data.categories?.map(cat => (
+                          <option key={cat.id} value={cat.id} className="text-black">{cat.icon} {cat.name}</option>
+                        ))}
+                      </select>
                     </div>
 
                     <div className="flex gap-2 p-1 bg-white/10 rounded-2xl">
@@ -222,6 +243,55 @@ export default function LancamentosPage() {
                       >
                         Receita
                       </button>
+                    </div>
+
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-2xl">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-white/70">Exibir na tela inicial</Label>
+                        <input
+                          type="checkbox"
+                          checked={showOnHome}
+                          onChange={(e) => setShowOnHome(e.target.checked)}
+                          className="w-5 h-5 rounded-lg bg-white/10 border-white/20 text-apple-blue focus:ring-apple-blue/30"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-2xl">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-white/70">Compra no Crédito</Label>
+                        <input
+                          type="checkbox"
+                          checked={isCredit}
+                          onChange={(e) => setIsCredit(e.target.checked)}
+                          className="w-5 h-5 rounded-lg bg-white/10 border-white/20 text-apple-blue focus:ring-apple-blue/30"
+                        />
+                      </div>
+
+                      {isCredit && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="grid grid-cols-2 gap-4"
+                        >
+                          <div className="space-y-1.5">
+                            <Label className="text-[10px] font-black uppercase tracking-widest opacity-70 ml-1 text-white">Valor Total</Label>
+                            <Input
+                              value={totalAmount}
+                              onChange={(e) => setTotalAmount(maskCurrency(e.target.value))}
+                              className="h-14 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/40 font-bold focus:ring-white/30"
+                              placeholder="0,00"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-[10px] font-black uppercase tracking-widest opacity-70 ml-1 text-white">Valor da Parcela</Label>
+                            <Input
+                              value={installmentValue}
+                              onChange={(e) => setInstallmentValue(maskCurrency(e.target.value))}
+                              className="h-14 rounded-2xl bg-white/10 border-white/20 text-white placeholder:text-white/40 font-bold focus:ring-white/30"
+                              placeholder="0,00"
+                            />
+                          </div>
+                        </motion.div>
+                      )}
                     </div>
                   </div>
 
@@ -246,7 +316,7 @@ export default function LancamentosPage() {
             </AnimatePresence>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       <motion.div {...fadeInUp} className="bg-white dark:bg-zinc-900 rounded-[32px] border border-border/40 overflow-hidden shadow-sm">
         {lancamentos.length === 0 ? (

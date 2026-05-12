@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAppData } from '@/lib/data/store';
 import { formatCurrency } from '@/lib/helpers';
@@ -20,6 +20,9 @@ import {
   Shield,
   Key,
   Cloud,
+  Plus,
+  Trash2,
+  Tag,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -41,6 +44,17 @@ export default function SettingsPage() {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Sync state with data when it loads
+  useEffect(() => {
+    setDisplayName(data.userName);
+    setIncome(data.wallet.currentIncome.toString());
+    setIncomeDate(data.wallet.incomeUpdateDate);
+  }, [data.userName, data.wallet.currentIncome, data.wallet.incomeUpdateDate]);
+
+  useEffect(() => {
+    setLoginUser(currentUsername);
+  }, [currentUsername]);
 
   const handleUpdateIncome = () => {
     const parsed = parseFloat(income.replace(',', '.'));
@@ -119,6 +133,35 @@ export default function SettingsPage() {
     }
   };
 
+  // Categories
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatIcon, setNewCatIcon] = useState('📦');
+  const [newCatColor, setNewCatColor] = useState('#D1D5DB');
+
+  const handleAddCategory = () => {
+    if (!newCatName.trim()) {
+      toast.error('Informe o nome da categoria');
+      return;
+    }
+    dispatch({
+      type: 'ADD_CATEGORY',
+      payload: {
+        name: newCatName.trim(),
+        icon: newCatIcon,
+        color: newCatColor,
+      },
+    });
+    setNewCatName('');
+    toast.success('Categoria adicionada');
+  };
+
+  const handleRemoveCategory = (id: string) => {
+    if (window.confirm('Remover esta categoria? Transações existentes não serão apagadas.')) {
+      dispatch({ type: 'REMOVE_CATEGORY', payload: id });
+      toast.success('Categoria removida');
+    }
+  };
+
   return (
     <>
       <Header title="Ajustes" subtitle="Gerencie seu perfil e segurança" />
@@ -172,6 +215,55 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-6">
+          {/* Categories Management */}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="bg-white dark:bg-zinc-900 rounded-[32px] border border-border/40 p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
+                <Tag className="w-6 h-6 text-purple-600" />
+              </div>
+              <h3 className="text-lg font-bold">Gerenciar Categorias</h3>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="p-4 bg-secondary/30 rounded-2xl space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nova Categoria</p>
+                <div className="grid grid-cols-[auto_1fr_auto] gap-3 items-end">
+                   <div className="space-y-2">
+                     <Label className="text-[10px] font-bold uppercase ml-1">Ícone</Label>
+                     <Input value={newCatIcon} onChange={(e) => setNewCatIcon(e.target.value)} className="w-12 h-12 p-0 text-center text-xl rounded-xl border-0 bg-white dark:bg-zinc-800" />
+                   </div>
+                   <div className="space-y-2">
+                     <Label className="text-[10px] font-bold uppercase ml-1">Nome</Label>
+                     <Input value={newCatName} onChange={(e) => setNewCatName(e.target.value)} placeholder="Ex: Mercado" className="h-12 rounded-xl border-0 bg-white dark:bg-zinc-800" />
+                   </div>
+                   <div className="space-y-2 text-center">
+                     <Label className="text-[10px] font-bold uppercase block">Cor</Label>
+                     <input type="color" value={newCatColor} onChange={(e) => setNewCatColor(e.target.value)} className="w-10 h-10 rounded-full border-0 cursor-pointer overflow-hidden bg-transparent" />
+                   </div>
+                </div>
+                <Button onClick={handleAddCategory} className="w-full h-12 rounded-xl bg-apple-blue text-white font-bold gap-2">
+                  <Plus className="w-4 h-4" /> Adicionar
+                </Button>
+              </div>
+
+              <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 no-scrollbar">
+                {data.categories?.map(cat => (
+                  <div key={cat.id} className="flex items-center justify-between p-3 bg-white dark:bg-zinc-900 rounded-2xl border border-border/40 group">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm" style={{ backgroundColor: `${cat.color}20` }}>
+                        {cat.icon}
+                      </div>
+                      <span className="text-sm font-bold">{cat.name}</span>
+                    </div>
+                    <button onClick={() => handleRemoveCategory(cat.id)} className="w-8 h-8 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
           {/* Security / Login */}
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white dark:bg-zinc-900 rounded-[32px] border border-border/40 p-8 shadow-sm">
             <div className="flex items-center gap-3 mb-6">

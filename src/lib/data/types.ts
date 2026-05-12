@@ -1,3 +1,10 @@
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+}
+
 export interface Wallet {
   currentBalance: number;
   currentIncome: number;
@@ -21,6 +28,9 @@ export interface Subscription {
   active: boolean;
   lastChargedDate?: string;
   icon?: string; // Emoji, text, or URL
+  isCredit?: boolean;
+  totalAmount?: number;
+  installmentValue?: number;
 }
 
 export interface Bill {
@@ -32,6 +42,10 @@ export interface Bill {
   recurring: boolean;
   recurrenceDay?: number;
   icon?: string;
+  isCredit?: boolean;
+  totalAmount?: number;
+  installmentValue?: number;
+  categoryId?: string;
 }
 
 export interface Notification {
@@ -50,6 +64,11 @@ export interface Lancamento {
   scheduledDate: string;
   executed: boolean;
   icon?: string;
+  showOnHome?: boolean;
+  isCredit?: boolean;
+  totalAmount?: number;
+  installmentValue?: number;
+  categoryId?: string;
 }
 
 export interface Record {
@@ -76,6 +95,10 @@ export interface Record {
   amount: number;
   previousBalance: number;
   newBalance: number;
+  isCredit?: boolean;
+  totalAmount?: number;
+  installmentValue?: number;
+  categoryId?: string;
 }
 
 export interface AppData {
@@ -86,6 +109,7 @@ export interface AppData {
   records: Record[];
   notifications: Notification[];
   lancamentos: Lancamento[];
+  categories: Category[];
   lastProcessedDate: string;
   userName: string;
   updatedAt?: string;
