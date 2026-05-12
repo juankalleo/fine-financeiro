@@ -111,8 +111,6 @@ export function CategoryStats({ month, year }: CategoryStatsProps) {
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                activeIndex={activeIndex}
-                activeShape={renderActiveShape}
                 data={categoryData}
                 cx="50%"
                 cy="50%"
@@ -127,10 +125,11 @@ export function CategoryStats({ month, year }: CategoryStatsProps) {
                 stroke="none"
               >
                 {categoryData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.color} 
-                    className="outline-none focus:outline-none"
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.color}
+                    opacity={activeIndex === index ? 1 : 0.75}
+                    className="outline-none focus:outline-none transition-opacity"
                   />
                 ))}
               </Pie>
