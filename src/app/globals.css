@@ -55,6 +55,7 @@
   --input: 240 5.9% 90%;
   --ring: 240 10% 3.9%;
   --radius: 0.5rem;
+  --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 
   /* Default Blue Theme */
@@ -146,7 +147,7 @@
 }
 
 .pt-safe-plus-10 {
-  padding-top: calc(var(--safe-top) + 10px);
+  padding-top: calc(var(--safe-top) + 20px); /* Increased to 20px for better notch clearance */
 }
 
 .pt-safe-plus-40 {
@@ -157,6 +158,10 @@
   padding-bottom: var(--safe-bottom);
 }
 
+.pb-safe-plus-20 {
+  padding-bottom: calc(var(--safe-bottom) + 20px);
+}
+
 .pb-safe-minus-8 {
-  padding-bottom: calc(var(--safe-bottom) - 8px);
+  padding-bottom: calc(max(var(--safe-bottom), 12px)); /* Ensure at least 12px on older devices */
 }

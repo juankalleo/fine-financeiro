@@ -66,13 +66,13 @@ export default function AppLayout({
           {/* Main Content Frame */}
           <div className="flex-1 lg:mt-14 bg-background dark:bg-zinc-950 lg:rounded-tl-[40px] lg:rounded-bl-[40px] relative overflow-hidden shadow-2xl">
             <main className="absolute inset-0 overflow-y-auto no-scrollbar scroll-smooth">
-              <div className="w-full px-6 sm:px-12 lg:px-16 pt-0 lg:py-12 pb-24 lg:pb-12">
+              <div className="w-full px-6 sm:px-12 lg:px-16 pt-0 lg:py-12 pb-32 lg:pb-12">
                 {children}
               </div>
             </main>
           </div>
-          <BottomNav />
         </div>
+        <BottomNav />
       </div>
     </AppProvider>
   );

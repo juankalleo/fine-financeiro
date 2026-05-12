@@ -101,7 +101,7 @@ export default function DashboardPage() {
       <div className="space-y-6">
         {/* Main Balance Card - New Blue Mobile Design - Edge to Edge */}
         <motion.div {...fadeInUp} className="-mx-6 -mt-0 lg:mt-0">
-          <div className="relative overflow-hidden rounded-b-[40px] lg:rounded-[40px] px-6 py-8 lg:p-12 text-white shadow-2xl pt-safe-plus-10 lg:pt-12" style={{ backgroundColor: 'var(--apple-blue)' }}>
+          <div className="relative overflow-hidden rounded-b-[40px] lg:rounded-[40px] px-6 py-8 lg:p-12 text-white shadow-2xl pt-safe-plus-40 lg:pt-12" style={{ backgroundColor: 'var(--apple-blue)' }}>
             <div className="relative z-10">
               {/* Mobile Top Header (Inside Card) */}
               <div className="flex items-center justify-between mb-6 lg:hidden">
