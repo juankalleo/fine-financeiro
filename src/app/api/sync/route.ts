@@ -27,11 +27,17 @@ export async function GET(req: Request) {
     // If no meaningful v3 data, try to migrate from old keys (check many variants)
     if (!hasMeaningfulData(data?.value)) {
       const oldKeys = [
-        `user_data_${userId}`,
-        `user_data_kalleo`,   // legacy: was saved with display name
-        `user_data_admin`,    // legacy: login username
-        SYNC_KEY,             // original global key before user isolation
+        `user_data_${userId}`
       ];
+      
+      // Only migrate legacy global/admin keys if the user is the admin
+      if (userId === 'admin') {
+        oldKeys.push(
+          `user_data_kalleo`,   // legacy: was saved with display name
+          `user_data_admin`,    // legacy: login username
+          SYNC_KEY              // original global key before user isolation
+        );
+      }
       for (const oldKey of oldKeys) {
         const oldData = await col.findOne({ key: oldKey });
         if (oldData?.value && Object.keys(oldData.value).length > 0) {
