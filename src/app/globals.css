@@ -64,6 +64,12 @@
   --app-frame: #007AFF;
 }
 
+html, body {
+  overscroll-behavior-y: none;
+  height: 100%;
+  overflow: hidden;
+}
+
 .dark {
   --background: 240 10% 3.9%;
   --foreground: 0 0% 98%;
