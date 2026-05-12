@@ -96,26 +96,26 @@ export default function BillsPage() {
   return (
     <>
       {/* Hero Section - Dynamic & Expandable */}
-      <motion.div 
+      <motion.div
         initial={false}
-        animate={{ 
+        animate={{
           marginBottom: isAdding ? '2rem' : '2rem'
         }}
         className="-mx-6 -mt-8 overflow-hidden"
       >
-        <div className="relative overflow-hidden bg-gradient-to-br from-apple-orange to-amber-500 rounded-b-[40px] px-6 pb-10 pt-[calc(env(safe-area-inset-top)+40px)] text-white shadow-2xl shadow-apple-orange/20 transition-all duration-500">
+        <div className="relative overflow-hidden bg-gradient-to-br from-apple-orange to-amber-500 rounded-b-[40px] px-6 pb-10 pt-safe-plus-40 text-white shadow-2xl shadow-apple-orange/20 transition-all duration-500">
           {/* Decorative Elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
-          
+
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-8">
-              <button 
+              <button
                 onClick={() => router.back()}
                 className={`w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all ${isAdding ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'}`}
               >
                 <ChevronLeft className="w-6 h-6 text-white" />
               </button>
-              
+
               <div className="text-center absolute left-1/2 -translate-x-1/2">
                 <p className="text-[10px] font-black uppercase tracking-widest opacity-70">
                   {isAdding ? 'Nova Conta' : 'Contas'}
@@ -123,7 +123,7 @@ export default function BillsPage() {
                 <p className="text-xs font-bold">{formatDate(new Date().toISOString())}</p>
               </div>
 
-              <button 
+              <button
                 onClick={() => isAdding ? resetLocalForm() : null}
                 className={`w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all ${!isAdding ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'}`}
               >
@@ -170,7 +170,7 @@ export default function BillsPage() {
                   className="overflow-hidden mt-8 space-y-6"
                 >
                   <div className="h-px bg-white/10 w-full mb-6" />
-                  
+
                   <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase tracking-widest opacity-70 ml-1 text-white">Serviço</Label>
@@ -512,11 +512,10 @@ function BillFormDialog({
                   key={ic}
                   type="button"
                   onClick={() => setIcon(ic)}
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all ${
-                    icon === ic
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all ${icon === ic
                       ? 'bg-accent ring-2 ring-apple-blue scale-110'
                       : 'bg-secondary/50 hover:bg-secondary'
-                  }`}
+                    }`}
                 >
                   {ic}
                 </button>

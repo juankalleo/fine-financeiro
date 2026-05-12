@@ -56,11 +56,13 @@
   --ring: 240 10% 3.9%;
   --radius: 0.5rem;
   --app-frame: #007AFF;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .dark {
   --background: 240 10% 3.9%;
-  --app-frame: #00458B;
+  --app-frame: #007AFF;
   --foreground: 0 0% 98%;
   --card: 240 10% 6%;
   --card-foreground: 0 0% 98%;
@@ -85,6 +87,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -101,7 +104,36 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.bg-app-frame {
+  background-color: var(--app-frame);
+}
+
+.text-app-frame {
+  color: var(--app-frame);
+}
+
+.pt-safe {
+  padding-top: var(--safe-top);
+}
+
+.pt-safe-plus-10 {
+  padding-top: calc(var(--safe-top) + 10px);
+}
+
+.pt-safe-plus-40 {
+  padding-top: calc(var(--safe-top) + 40px);
+}
+
+.pb-safe {
+  padding-bottom: var(--safe-bottom);
+}
+
+.pb-safe-minus-8 {
+  padding-bottom: calc(var(--safe-bottom) - 8px);
 }

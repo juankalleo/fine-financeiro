@@ -58,7 +58,7 @@ export default function DashboardPage() {
       <div className="space-y-6">
         {/* Main Balance Card - New Blue Mobile Design - Edge to Edge */}
         <motion.div {...fadeInUp} className="-mx-6 -mt-0 lg:mt-0">
-          <div className="relative overflow-hidden rounded-b-[40px] lg:rounded-[40px] bg-apple-blue px-6 py-8 lg:p-12 text-white shadow-2xl shadow-apple-blue/30 pt-[calc(env(safe-area-inset-top)+10px)] lg:pt-12">
+          <div className="relative overflow-hidden rounded-b-[40px] lg:rounded-[40px] bg-apple-blue px-6 py-8 lg:p-12 text-white shadow-2xl shadow-apple-blue/30 pt-safe-plus-10 lg:pt-12">
             <div className="relative z-10">
               {/* Mobile Top Header (Inside Card) */}
               <div className="flex items-center justify-between mb-6 lg:hidden">
@@ -90,7 +90,7 @@ export default function DashboardPage() {
                   <span className="text-[10px] font-bold text-white/90">+{formatCurrency(data.wallet.currentIncome)} este mês</span>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-3 gap-2 mt-6">
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 text-center border border-white/10">
                   <span className="text-[9px] font-black opacity-70 uppercase tracking-widest block mb-0.5">Receitas</span>
@@ -115,7 +115,7 @@ export default function DashboardPage() {
             <h3 className="text-lg font-black tracking-tight">Minhas Contas</h3>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </div>
-          
+
           <div className="flex gap-3 overflow-x-auto pb-4 -mx-6 px-6 no-scrollbar">
             {/* Salário Card */}
             <div className="min-w-[130px] bg-apple-green text-white rounded-[28px] p-4 shadow-lg shadow-apple-green/20 flex flex-col justify-between aspect-square shrink-0">
@@ -134,7 +134,7 @@ export default function DashboardPage() {
                 <div className="absolute top-3 right-3 text-[8px] font-black uppercase tracking-widest bg-secondary px-2 py-1 rounded-md text-muted-foreground">
                   Reserva
                 </div>
-                <div 
+                <div
                   className="w-10 h-10 rounded-2xl flex items-center justify-center"
                   style={{ backgroundColor: `${reserve.color}20` }}
                 >
@@ -166,14 +166,14 @@ export default function DashboardPage() {
                 </div>
               </div>
             ))}
-            
+
             {/* Adicionar Conta/Lancamento */}
             <Link href="/lancamentos">
               <div className="min-w-[130px] bg-secondary/50 hover:bg-secondary border border-dashed border-border/60 rounded-[28px] p-4 flex flex-col items-center justify-center aspect-square shrink-0 transition-colors cursor-pointer">
                 <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center mb-2 shadow-sm">
                   <Plus className="w-5 h-5 text-muted-foreground" />
                 </div>
-                <p className="text-[10px] font-bold text-muted-foreground text-center">Novo<br/>Lançamento</p>
+                <p className="text-[10px] font-bold text-muted-foreground text-center">Novo<br />Lançamento</p>
               </div>
             </Link>
           </div>
@@ -207,58 +207,58 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Recent Records */}
           <motion.div {...fadeInUp} transition={{ delay: 0.25 }}>
-             <div className="bg-white dark:bg-zinc-900 rounded-[40px] border border-border/40 overflow-hidden shadow-sm">
-                <div className="px-8 py-6 border-b border-border/40 flex items-center justify-between">
-                  <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Atividade Recente</h3>
-                  <Link href="/records" className="text-[10px] font-black text-apple-blue">VER TUDO</Link>
-                </div>
-                <div className="divide-y divide-border/30 px-2">
-                  {recentRecords.map((record) => (
-                    <div key={record.id} className="flex items-center gap-4 px-6 py-5 hover:bg-secondary/20 transition-colors rounded-2xl">
-                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${record.amount >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
-                        {record.amount >= 0 ? <ArrowUpRight className="w-5 h-5 text-emerald-600" /> : <ArrowDownRight className="w-5 h-5 text-red-500" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold truncate">{record.description}</p>
-                        <span className="text-[10px] text-muted-foreground font-bold uppercase">{new Date(record.date).toLocaleDateString('pt-BR')}</span>
-                      </div>
-                      <span className={`text-base font-black tabular-nums ${record.amount >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                        {record.amount >= 0 ? '+' : ''}{formatCurrency(record.amount)}
-                      </span>
+            <div className="bg-white dark:bg-zinc-900 rounded-[40px] border border-border/40 overflow-hidden shadow-sm">
+              <div className="px-8 py-6 border-b border-border/40 flex items-center justify-between">
+                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Atividade Recente</h3>
+                <Link href="/records" className="text-[10px] font-black text-apple-blue">VER TUDO</Link>
+              </div>
+              <div className="divide-y divide-border/30 px-2">
+                {recentRecords.map((record) => (
+                  <div key={record.id} className="flex items-center gap-4 px-6 py-5 hover:bg-secondary/20 transition-colors rounded-2xl">
+                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${record.amount >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
+                      {record.amount >= 0 ? <ArrowUpRight className="w-5 h-5 text-emerald-600" /> : <ArrowDownRight className="w-5 h-5 text-red-500" />}
                     </div>
-                  ))}
-                </div>
-             </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold truncate">{record.description}</p>
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase">{new Date(record.date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <span className={`text-base font-black tabular-nums ${record.amount >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                      {record.amount >= 0 ? '+' : ''}{formatCurrency(record.amount)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </motion.div>
 
           {/* Activity & Notifications */}
           <motion.div {...fadeInUp} transition={{ delay: 0.3 }}>
-             <div className="bg-zinc-100 dark:bg-zinc-800/40 rounded-[40px] p-8 border border-dashed border-border/60">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <Bell className="w-4 h-4" /> Centro de Avisos
-                  </h3>
-                </div>
-                <div className="space-y-4">
-                  {recentNotifs.length > 0 ? recentNotifs.map(notif => (
-                    <div key={notif.id} className="bg-white dark:bg-zinc-900 rounded-3xl p-5 shadow-sm border border-border/40">
-                      <p className="text-[10px] font-black text-apple-blue uppercase tracking-tighter mb-1">{notif.title}</p>
-                      <p className="text-xs text-muted-foreground font-medium leading-relaxed">{notif.message}</p>
-                    </div>
-                  )) : (
-                    <p className="text-center py-10 text-xs font-bold text-muted-foreground uppercase tracking-widest">Nenhum aviso novo</p>
-                  )}
-                </div>
-             </div>
+            <div className="bg-zinc-100 dark:bg-zinc-800/40 rounded-[40px] p-8 border border-dashed border-border/60">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  <Bell className="w-4 h-4" /> Centro de Avisos
+                </h3>
+              </div>
+              <div className="space-y-4">
+                {recentNotifs.length > 0 ? recentNotifs.map(notif => (
+                  <div key={notif.id} className="bg-white dark:bg-zinc-900 rounded-3xl p-5 shadow-sm border border-border/40">
+                    <p className="text-[10px] font-black text-apple-blue uppercase tracking-tighter mb-1">{notif.title}</p>
+                    <p className="text-xs text-muted-foreground font-medium leading-relaxed">{notif.message}</p>
+                  </div>
+                )) : (
+                  <p className="text-center py-10 text-xs font-bold text-muted-foreground uppercase tracking-widest">Nenhum aviso novo</p>
+                )}
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>
 
       <BalanceEditDialog open={showBalanceEdit} onOpenChange={setShowBalanceEdit} />
-      <ReserveTransactionDialog 
-        open={!!selectedReserve} 
-        onOpenChange={(open) => !open && setSelectedReserve(null)} 
-        reserve={selectedReserve} 
+      <ReserveTransactionDialog
+        open={!!selectedReserve}
+        onOpenChange={(open) => !open && setSelectedReserve(null)}
+        reserve={selectedReserve}
       />
     </>
   );

@@ -58,10 +58,9 @@ export function TopBar() {
   };
 
   return (
-    <header 
-      className={`fixed top-0 right-0 h-14 bg-[var(--app-frame)] z-30 lg:flex hidden items-center justify-between px-10 transition-all duration-300 ${
-        isSidebarCollapsed ? 'left-14' : 'left-64'
-      }`}
+    <header
+      className={`fixed top-0 right-0 h-14 bg-app-frame z-30 lg:flex hidden items-center justify-between px-10 transition-all duration-300 ${isSidebarCollapsed ? 'left-14' : 'left-64'
+        }`}
     >
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-white/50 uppercase">
@@ -80,12 +79,12 @@ export function TopBar() {
         </button>
 
         <div className="relative">
-          <button 
+          <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="flex items-center gap-2.5 p-1.5 hover:bg-white/10 rounded-xl group transition-all"
           >
             <div className="w-8 h-8 rounded-full bg-white dark:bg-zinc-800 flex items-center justify-center shadow-lg">
-              <User className="w-4 h-4 text-[var(--app-frame)] dark:text-apple-blue" />
+              <User className="w-4 h-4 text-app-frame dark:text-apple-blue" />
             </div>
             <ChevronDown className={`w-3 h-3 text-white/50 group-hover:text-white transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} />
           </button>
@@ -93,9 +92,9 @@ export function TopBar() {
           <AnimatePresence>
             {showProfileMenu && (
               <>
-                <div 
-                  className="fixed inset-0 z-40" 
-                  onClick={() => setShowProfileMenu(false)} 
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowProfileMenu(false)}
                 />
                 <motion.div
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -138,23 +137,23 @@ export function Sidebar() {
   const { isSidebarCollapsed, toggleSidebar } = useUI();
 
   return (
-    <aside 
-      className={`fixed top-0 left-0 bottom-0 bg-[var(--app-frame)] z-40 transition-all duration-300 ease-in-out lg:flex hidden flex-col ${
-        isSidebarCollapsed ? 'w-14' : 'w-64'
-      }`}
+    <aside
+      className={`fixed top-0 left-0 bottom-0 bg-app-frame z-40 transition-all duration-300 ease-in-out lg:flex hidden flex-col ${isSidebarCollapsed ? 'w-14' : 'w-64'
+        }`}
     >
-      <div className="h-14 flex items-center px-4 gap-3 shrink-0">
-        <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-2xl overflow-hidden">
-           <Image src="/icons/icon-192.png" alt="F" width={24} height={24} className="object-contain" />
-        </div>
-        {!isSidebarCollapsed && (
-          <motion.div 
+      <div className="h-20 flex items-center px-4 gap-3 shrink-0">
+        {!isSidebarCollapsed ? (
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex-1 min-w-0"
+            className="flex-1 min-w-0 text-center"
           >
-            <p className="text-xl font-black text-white tracking-tighter uppercase leading-none">Fine</p>
+            <p className="text-4xl font-black text-white tracking-tighter uppercase leading-none">Fine</p>
           </motion.div>
+        ) : (
+          <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center shrink-0 shadow-2xl border border-white/10 mx-auto">
+            <span className="text-xl font-black text-white tracking-tighter">F</span>
+          </div>
         )}
       </div>
 
@@ -170,14 +169,13 @@ export function Sidebar() {
                 className="relative block group"
               >
                 <div
-                  className={`flex items-center gap-3.5 px-3.5 py-3 rounded-2xl text-[13px] font-black tracking-tight transition-all ${
-                    isActive
-                      ? 'bg-white dark:bg-zinc-800 text-[var(--app-frame)] dark:text-apple-blue shadow-2xl shadow-black/20 scale-[1.03]'
-                      : 'text-white/60 hover:bg-white/10 hover:text-white'
-                  }`}
+                  className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[16px] font-black tracking-tight transition-all ${isActive
+                    ? 'bg-white/20 text-white shadow-2xl shadow-black/20 scale-[1.03] border border-white/10'
+                    : 'text-white/90 hover:bg-white/10 hover:text-white'
+                    }`}
                 >
-                  <Icon className="w-5 h-5 shrink-0" />
-                  
+                  <Icon className="w-6 h-6 shrink-0" />
+
                   {!isSidebarCollapsed && (
                     <motion.span
                       initial={{ opacity: 0 }}
@@ -186,7 +184,7 @@ export function Sidebar() {
                       {item.label}
                     </motion.span>
                   )}
-                  
+
                   {isSidebarCollapsed && (
                     <div className="absolute left-full ml-4 px-3 py-2 bg-zinc-900 text-white text-[11px] rounded-xl shadow-2xl shadow-black/40 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
                       {item.label}
@@ -225,7 +223,7 @@ export function BottomNav() {
   ];
 
   return (
-    <div className="lg:hidden shrink-0 z-50 bg-background/80 backdrop-blur-2xl border-t border-white/[0.05] pb-[calc(env(safe-area-inset-bottom)-8px)]">
+    <div className="lg:hidden shrink-0 z-50 bg-background/80 backdrop-blur-2xl border-t border-white/[0.05] pb-safe-minus-8">
       <nav className="flex items-center justify-around h-14 px-2">
         {mobileItems.map((item, index) => {
           const isActive = pathname === item.href;
@@ -239,11 +237,10 @@ export function BottomNav() {
                 href={item.href}
                 className="relative flex flex-col items-center justify-center -mt-4"
               >
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-500 ${
-                  isActive 
-                    ? 'bg-apple-blue text-white scale-110 shadow-apple-blue/40' 
-                    : 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-black/20'
-                }`}>
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-500 ${isActive
+                  ? 'bg-apple-blue text-white scale-110 shadow-apple-blue/40'
+                  : 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-black/20'
+                  }`}>
                   <Icon className="w-6 h-6" />
                 </div>
                 <span className={`text-[7px] font-black uppercase tracking-tighter mt-1 ${isActive ? 'text-apple-blue' : 'text-muted-foreground'}`}>

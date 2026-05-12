@@ -56,21 +56,22 @@ export interface Record {
   id: string;
   date: string;
   type:
-    | 'manual_adjustment'
-    | 'subscription_charge'
-    | 'bill_payment'
-    | 'reserve_deposit'
-    | 'income_update'
-    | 'balance_update'
-    | 'subscription_added'
-    | 'subscription_removed'
-    | 'bill_added'
-    | 'bill_removed'
-    | 'reserve_added'
-    | 'reserve_removed'
-    | 'lancamento_added'
-    | 'lancamento_executed'
-    | 'lancamento_removed';
+  | 'manual_adjustment'
+  | 'subscription_charge'
+  | 'bill_payment'
+  | 'reserve_deposit'
+  | 'income_update'
+  | 'balance_update'
+  | 'subscription_added'
+  | 'subscription_removed'
+  | 'bill_added'
+  | 'bill_removed'
+  | 'reserve_added'
+  | 'reserve_removed'
+  | 'lancamento_added'
+  | 'lancamento_executed'
+  | 'lancamento_removed'
+  | 'lancamento_reverted';
   description: string;
   amount: number;
   previousBalance: number;
@@ -108,6 +109,7 @@ export const RECORD_TYPE_LABELS: { [key in RecordType]: string } = {
   lancamento_added: 'Lançamento Criado',
   lancamento_executed: 'Lançamento Executado',
   lancamento_removed: 'Lançamento Removido',
+  lancamento_reverted: 'Lançamento Revertido',
 };
 
 export const RECORD_TYPE_COLORS: { [key in RecordType]: string } = {
@@ -126,4 +128,5 @@ export const RECORD_TYPE_COLORS: { [key in RecordType]: string } = {
   lancamento_added: 'bg-indigo-100 text-indigo-700',
   lancamento_executed: 'bg-emerald-100 text-emerald-700',
   lancamento_removed: 'bg-gray-100 text-gray-700',
+  lancamento_reverted: 'bg-amber-100 text-amber-700',
 };

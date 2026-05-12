@@ -20,10 +20,10 @@ export function Header({ title, subtitle }: HeaderProps) {
   const secondaryTitle = subtitle || (title ? `${greeting}, ${data.userName.split(' ')[0]}` : formatDate(new Date().toISOString()));
 
   return (
-    <header className="flex flex-col gap-1 mb-8 pt-[env(safe-area-inset-top)] lg:pt-0">
+    <header className="flex flex-col gap-1 mb-8 pt-safe lg:pt-0">
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-3">
-          <button 
+          <button
             onClick={() => router.back()}
             className="lg:hidden w-10 h-10 rounded-full bg-secondary flex items-center justify-center shrink-0 mt-1"
           >

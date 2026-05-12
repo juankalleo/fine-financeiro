@@ -55,7 +55,7 @@ export default function LoginPage() {
           className="flex flex-col items-center mb-10"
         >
           <div className="w-20 h-20 rounded-[28px] bg-white flex items-center justify-center shadow-2xl shadow-black/20 mb-6 overflow-hidden border-4 border-white/20">
-             <Image src="/icons/icon-192.png" alt="Fine" width={80} height={80} className="object-cover" />
+            <Image src="/icons/icon-192.png" alt="Fine" width={80} height={80} className="object-cover" />
           </div>
           <h1 className="text-4xl font-black tracking-tighter text-white uppercase">
             Fine
@@ -69,7 +69,7 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl rounded-[40px] p-8 shadow-2xl shadow-black/20 border border-white/20"
+          className="bg-white dark:bg-zinc-900 rounded-[40px] p-8 shadow-2xl shadow-black/25 border border-white/30"
         >
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-2xl bg-apple-blue/10 flex items-center justify-center">
@@ -98,7 +98,7 @@ export default function LoginPage() {
                   setUsername(e.target.value);
                   setError('');
                 }}
-                className="h-14 rounded-2xl bg-secondary/50 border-0 text-base pl-12 pr-4 placeholder:text-muted-foreground/40 focus-visible:ring-2 focus-visible:ring-apple-blue/30 transition-all font-bold"
+                className="h-14 rounded-2xl bg-gray-100 dark:bg-zinc-800 border-0 text-base pl-12 pr-4 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus-visible:ring-2 focus-visible:ring-apple-blue/50 transition-all font-bold text-foreground"
               />
             </div>
 
@@ -114,7 +114,7 @@ export default function LoginPage() {
                   setPassword(e.target.value);
                   setError('');
                 }}
-                className="h-14 rounded-2xl bg-secondary/50 border-0 text-base pl-12 pr-12 placeholder:text-muted-foreground/40 focus-visible:ring-2 focus-visible:ring-apple-blue/30 transition-all font-bold"
+                className="h-14 rounded-2xl bg-gray-100 dark:bg-zinc-800 border-0 text-base pl-12 pr-12 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus-visible:ring-2 focus-visible:ring-apple-blue/50 transition-all font-bold text-foreground"
               />
               <button
                 type="button"

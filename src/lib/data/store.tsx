@@ -74,7 +74,8 @@ type Action =
   | { type: 'ADD_LANCAMENTO'; payload: Omit<Lancamento, 'id'> }
   | { type: 'UPDATE_LANCAMENTO'; payload: Lancamento }
   | { type: 'REMOVE_LANCAMENTO'; payload: string }
-  | { type: 'EXECUTE_LANCAMENTO'; payload: string };
+  | { type: 'EXECUTE_LANCAMENTO'; payload: string }
+  | { type: 'REVERT_LANCAMENTO'; payload: string };
 
 function createRecord(type: Record['type'], description: string, amount: number, prev: number, next: number): Record {
   return { id: generateId(), date: new Date().toISOString(), type, description, amount, previousBalance: prev, newBalance: next };
@@ -207,9 +208,25 @@ function reducer(state: AppData, action: Action): AppData {
       newState = { ...state, lancamentos: (state.lancamentos || []).map(l => l.id === action.payload.id ? action.payload : l) };
       break;
 
-    case 'REMOVE_LANCAMENTO':
-      newState = { ...state, lancamentos: (state.lancamentos || []).filter(l => l.id !== action.payload) };
+    case 'REMOVE_LANCAMENTO': {
+      const lancToRemove = (state.lancamentos || []).find(l => l.id === action.payload);
+      if (!lancToRemove) return state;
+      
+      let updatedStateRemove = { ...state, lancamentos: (state.lancamentos || []).filter(l => l.id !== action.payload) };
+      
+      if (lancToRemove.executed) {
+        const effect = lancToRemove.type === 'income' ? -lancToRemove.amount : lancToRemove.amount;
+        const nextBal = state.wallet.currentBalance + effect;
+        updatedStateRemove = {
+          ...updatedStateRemove,
+          wallet: { ...updatedStateRemove.wallet, currentBalance: nextBal },
+          records: [createRecord('lancamento_removed', `Excluído: ${lancToRemove.description}`, effect, state.wallet.currentBalance, nextBal), ...state.records],
+        };
+      }
+      
+      newState = updatedStateRemove;
       break;
+    }
 
     case 'EXECUTE_LANCAMENTO': {
       const lanc = (state.lancamentos || []).find(l => l.id === action.payload);
@@ -221,6 +238,20 @@ function reducer(state: AppData, action: Action): AppData {
         wallet: { ...state.wallet, currentBalance: nextBal },
         lancamentos: (state.lancamentos || []).map(l => l.id === action.payload ? { ...l, executed: true } : l),
         records: [createRecord('lancamento_executed', `Lançamento: ${lanc.description}`, effect, state.wallet.currentBalance, nextBal), ...state.records],
+      };
+      break;
+    }
+
+    case 'REVERT_LANCAMENTO': {
+      const lanc = (state.lancamentos || []).find(l => l.id === action.payload);
+      if (!lanc || !lanc.executed) return state;
+      const effect = lanc.type === 'income' ? -lanc.amount : lanc.amount;
+      const nextBal = state.wallet.currentBalance + effect;
+      newState = {
+        ...state,
+        wallet: { ...state.wallet, currentBalance: nextBal },
+        lancamentos: (state.lancamentos || []).map(l => l.id === action.payload ? { ...l, executed: false } : l),
+        records: [createRecord('lancamento_reverted', `Revertido: ${lanc.description}`, effect, state.wallet.currentBalance, nextBal), ...state.records],
       };
       break;
     }

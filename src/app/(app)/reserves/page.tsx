@@ -53,7 +53,7 @@ export default function ReservesPage() {
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return toast.error('Dê um nome para a reserva');
-    
+
     const payload = {
       name: name.trim(),
       amount: parseFloat(amount) || 0,
@@ -79,20 +79,20 @@ export default function ReservesPage() {
   return (
     <>
       {/* Hero Section - Dynamic & Expandable */}
-      <motion.div 
+      <motion.div
         initial={false}
-        animate={{ 
+        animate={{
           marginBottom: isAdding ? '2rem' : '2rem'
         }}
         className="-mx-6 -mt-8 overflow-hidden"
       >
-        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 to-apple-blue rounded-b-[40px] px-6 pb-10 pt-[calc(env(safe-area-inset-top)+40px)] text-white shadow-2xl shadow-indigo-600/20 transition-all duration-500">
+        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 to-apple-blue rounded-b-[40px] px-6 pb-10 pt-safe-plus-40 text-white shadow-2xl shadow-indigo-600/20 transition-all duration-500">
           {/* Decorative Elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
-          
+
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-8">
-              <button 
+              <button
                 onClick={() => router.back()}
                 className={`w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all ${isAdding ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'}`}
               >
@@ -106,7 +106,7 @@ export default function ReservesPage() {
                 <p className="text-xs font-bold">{formatDate(new Date().toISOString())}</p>
               </div>
 
-              <button 
+              <button
                 onClick={() => isAdding ? resetLocalForm() : null}
                 className={`w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all ${!isAdding ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'}`}
               >
@@ -153,7 +153,7 @@ export default function ReservesPage() {
                   className="overflow-hidden mt-8 space-y-6"
                 >
                   <div className="h-px bg-white/10 w-full mb-6" />
-                  
+
                   <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase tracking-widest opacity-70 ml-1 text-white">Objetivo</Label>
@@ -222,52 +222,52 @@ export default function ReservesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <AnimatePresence>
             {data.reserves.map((reserve, i) => (
-                <div 
-                  key={reserve.id}
-                  onClick={() => setSelectedForTransaction(reserve)}
-                  className="group relative bg-white dark:bg-zinc-900 rounded-3xl border border-border/40 p-5 overflow-hidden transition-all hover:shadow-lg cursor-pointer"
-                >
-                  <div 
-                    className="absolute top-0 left-0 w-1.5 h-full" 
-                    style={{ backgroundColor: reserve.color }}
-                  />
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-                        style={{ backgroundColor: `${reserve.color}15`, color: reserve.color }}
-                      >
-                        {reserve.icon || '💰'}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground">{reserve.name}</h3>
-                        <p className="text-[10px] text-muted-foreground">Contribuição: {formatCurrency(reserve.monthlyContribution)}/mês</p>
-                      </div>
+              <div
+                key={reserve.id}
+                onClick={() => setSelectedForTransaction(reserve)}
+                className="group relative bg-white dark:bg-zinc-900 rounded-3xl border border-border/40 p-5 overflow-hidden transition-all hover:shadow-lg cursor-pointer"
+              >
+                <div
+                  className="absolute top-0 left-0 w-1.5 h-full"
+                  style={{ backgroundColor: reserve.color }}
+                />
+
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+                      style={{ backgroundColor: `${reserve.color}15`, color: reserve.color }}
+                    >
+                      {reserve.icon || '💰'}
                     </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={(e) => { e.stopPropagation(); setEditing(reserve); setShowForm(true); }} className="p-2 hover:bg-secondary rounded-lg"><Pencil className="w-3.5 h-3.5" /></button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDelete(reserve.id); }} className="p-2 hover:bg-red-50 text-red-500 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <div>
+                      <h3 className="font-semibold text-foreground">{reserve.name}</h3>
+                      <p className="text-[10px] text-muted-foreground">Contribuição: {formatCurrency(reserve.monthlyContribution)}/mês</p>
                     </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold tabular-nums">{formatCurrency(reserve.amount)}</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: '70%' }}
-                        className="h-full rounded-full"
-                        style={{ backgroundColor: reserve.color }}
-                      />
-                    </div>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={(e) => { e.stopPropagation(); setEditing(reserve); setShowForm(true); }} className="p-2 hover:bg-secondary rounded-lg"><Pencil className="w-3.5 h-3.5" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); handleDelete(reserve.id); }} className="p-2 hover:bg-red-50 text-red-500 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold tabular-nums">{formatCurrency(reserve.amount)}</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: '70%' }}
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: reserve.color }}
+                    />
+                  </div>
+                </div>
+              </div>
             ))}
           </AnimatePresence>
-          
+
           {data.reserves.length === 0 && (
             <div className="col-span-full py-20 text-center border-2 border-dashed border-border/40 rounded-3xl">
               <PiggyBank className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
@@ -321,7 +321,7 @@ function ReserveFormDialog({ open, onOpenChange, editing }: { open: boolean; onO
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return toast.error('Dê um nome para a reserva');
-    
+
     const payload = {
       name: name.trim(),
       amount: parseFloat(amount) || 0,
@@ -343,7 +343,7 @@ function ReserveFormDialog({ open, onOpenChange, editing }: { open: boolean; onO
   const colors = ['#007AFF', '#34C759', '#FF9500', '#AF52DE', '#FF2D55', '#5856D6', '#FFCC00', '#8E8E93'];
 
   return (
-    <Dialog open={open} onOpenChange={(val) => { if(val) resetForm(); onOpenChange(val); }}>
+    <Dialog open={open} onOpenChange={(val) => { if (val) resetForm(); onOpenChange(val); }}>
       <DialogContent className="sm:max-w-[420px] rounded-3xl p-0 overflow-hidden">
         <div className="px-6 py-5 border-b" style={{ backgroundColor: `${color}10` }}>
           <DialogTitle style={{ color }}>{editing ? 'Editar Reserva' : 'Nova Reserva'}</DialogTitle>
