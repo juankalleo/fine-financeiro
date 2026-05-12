@@ -24,12 +24,12 @@ function migrateOldData(username: string): void {
     `fine_data_v2_${username}`,
     `fine_data_v1_${username}`,
     `fine_data_${username}`,
-    `fine_data_v2_admin`, // in case username was changed
-    `fine_data_v1_admin`,
-    `fine_data_admin`,
-    `financeapp_data`,
-    `finance_data`,
   ];
+
+  // Only try admin fallbacks if the user is actually admin
+  if (username === 'admin') {
+    oldKeys.push(`fine_data_v2_admin`, `fine_data_v1_admin`, `fine_data_admin`, `financeapp_data`, `finance_data`);
+  }
 
   for (const oldKey of oldKeys) {
     const old = localStorage.getItem(oldKey);
@@ -397,7 +397,7 @@ function reducer(state: AppData, action: Action): AppData {
       break;
 
     case 'RESET_DATA':
-      newState = initialData;
+      newState = { ...initialData, userName: state.userName };
       break;
 
     case 'ADD_CATEGORY':

@@ -158,6 +158,10 @@
   padding-bottom: var(--safe-bottom);
 }
 
+.pb-safe-tight {
+  padding-bottom: calc(var(--safe-bottom) * 0.5); /* Half the safe area for a more compact look */
+}
+
 .pb-safe-plus-20 {
   padding-bottom: calc(var(--safe-bottom) + 20px);
 }
