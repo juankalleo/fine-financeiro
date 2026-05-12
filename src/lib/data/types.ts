@@ -27,10 +27,11 @@ export interface Subscription {
   billingDay: number;
   active: boolean;
   lastChargedDate?: string;
-  icon?: string; // Emoji, text, or URL
+  icon?: string;
   isCredit?: boolean;
   totalAmount?: number;
   installmentValue?: number;
+  categoryId?: string;
 }
 
 export interface Bill {
